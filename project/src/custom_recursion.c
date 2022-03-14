@@ -3,11 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void custom_recursion(int n){
-    if(n>1){
+void custom_recursion(int n) {
+    if (n > 1) {
         custom_recursion(n-1);
         printf(" ");
-    }else if(n<1){
+    } else if (n < 1) {
         custom_recursion(n+1);
         printf(" ");
     }

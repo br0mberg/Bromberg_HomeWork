@@ -3,11 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-size_t timer_from (unsigned char from,unsigned char add) {
+size_t timer_from(unsigned char from, unsigned char add) {
     size_t counter = 0;
     int num = 0;
 
-    if(add != 0) {
+    if (add != 0) {
         from += 1;
     }
 
@@ -17,11 +17,11 @@ size_t timer_from (unsigned char from,unsigned char add) {
         printf("%d ", num);
     }
 
-    num -=1;
+    num -= 1;
     ++counter;
     printf("%d", num);
 
-    for(unsigned char i = add;i>0;--i){
+    for (unsigned char i = add; i > 0; --i) {
         ++counter;
         int number = (int) i -1;
         printf(" %d", number);
@@ -33,10 +33,12 @@ size_t timer_from (unsigned char from,unsigned char add) {
 
 int custom_pow(int base, int power) {
     int res = base;
-    if(power != 0) {
-        for (int i=1;i<power;++i){
-        res*=base;
+    if (power != 0) {
+        for (int i=1; i < power; ++i) {
+        res *= base;
         }
-    }else res=1;
+    } else {
+        res = 1;
+    }
     return res;
 }

@@ -5,10 +5,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int atoi (const char *str);
-enum MAIN_CONST {ERR_ARGS_COUNT=-1,ERR_WRONG_FLG=-2,TST_FOO_FIX=1,TST_FOO_IMPL,TST_MOD_IMPL, TST_MOD_LASTIMPL};
+int atoi(const char *str);
+enum MAIN_CONST {
+    ERR_ARGS_COUNT = -1,
+    ERR_WRONG_FLG = -2,
+    TST_FOO_FIX = 1,
+    TST_FOO_IMPL,
+    TST_MOD_IMPL,
+    TST_MOD_LASTIMPL
+};
 
-//val-grint
+//  val-grint
 /* NOTE(stitaevskiy):
  * We use `atoi` function just for simplification and code reducing.
  * This function doesn't report conversation errors.
@@ -37,10 +44,10 @@ int main(int argc, const char** argv) {
         case TST_FOO_FIX: {
             int to = atoi(data);
             unsigned char add = 0;
-            if (to>255) add=255;
-            size_t ticks_count=0;
-            if(to>0) {
-                ticks_count = timer_from(to,add);
+            if (to > 255) add = 255;
+            size_t ticks_count = 0;
+            if (to > 0) {
+                ticks_count = timer_from(to, add);
             }
             printf("%zu\n", ticks_count);
             break;

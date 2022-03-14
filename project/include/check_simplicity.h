@@ -1,9 +1,9 @@
-#ifndef CHECK_SIMPLICITY_H
+#ifndef PROJECT_INCLUDE_CHECK_SIMPLICITY_H_
 #include <stddef.h>
 
-#define CHECK_SIMPLICITY_H
+#define PROJECT_INCLUDE_CHECK_SIMPLICITY_H_
 
 int custom_check_simplicity(int num);
 
-#endif //CHECK_SIMPLICITY_H
+#endif  // PROJECT_INCLUDE_CHECK_SIMPLICITY_H_
 
