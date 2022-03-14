@@ -5,7 +5,7 @@
 
 size_t timer_from (unsigned char from,unsigned char add) {
     size_t counter = 0;
-    int num=0;
+    int num = 0;
 
     if(add != 0) {
         from += 1;
@@ -23,8 +23,8 @@ size_t timer_from (unsigned char from,unsigned char add) {
 
     for(unsigned char i = add;i>0;--i){
         ++counter;
-        int num = (int) i -1;
-        printf(" %d", num);
+        int number = (int) i -1;
+        printf(" %d", number);
     }
 
     printf("\n");
