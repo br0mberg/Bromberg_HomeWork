@@ -1,4 +1,4 @@
-#include "/mnt/c/Users/User/Desktop/Bromberg_HomeWork/project/include/utils.h"
+#include "../include/utils.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>

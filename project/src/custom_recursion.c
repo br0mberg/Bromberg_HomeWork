@@ -1,4 +1,4 @@
-#include "/mnt/c/Users/User/Desktop/Bromberg_HomeWork/project/include/custom_recursion.h"
+#include "../include/custom_recursion.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>

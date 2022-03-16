@@ -1,4 +1,4 @@
-#include "/mnt/c/Users/User/Desktop/Bromberg_HomeWork/project/include/check_simplicity.h"
+#include "../include/check_simplicity.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
