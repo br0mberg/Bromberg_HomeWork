@@ -97,4 +97,3 @@ struct masterRecord{ int 		Number; char 		Name[20]; char 		Surname[20]; char 		a
 			fprintf(blackrecord   ,"%-12d%-11s%-11s%-16s%20s%12.2f%12.2f%12.2f\n", client_data.Number, client_data.Name, client_data.Surname, client_data.addres, client_data.TelNumber, client_data.indebtedness,	client_data.credit_limit ,  client_data.cash_payments    ) ;
 			rewind(	ofPTR_2 );
 		} }
-
