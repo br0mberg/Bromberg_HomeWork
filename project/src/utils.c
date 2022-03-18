@@ -1,7 +1,7 @@
-#include "../include/utils.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "../include/utils.h"
 
 size_t timer_from(unsigned char from, int add) {
     size_t counter = 0;
@@ -27,12 +27,14 @@ size_t timer_from(unsigned char from, int add) {
 
 int custom_pow(int base, int power) {
     int res = base;
+
     if (!power) {
         return 1;
-    } else {
-        for (int i = 1; i < power; ++i) {
-        res *= base;
-        }
     }
+
+    for (int i = 1; i < power; ++i) {
+        res *= base;
+    }
+
     return res;
 }

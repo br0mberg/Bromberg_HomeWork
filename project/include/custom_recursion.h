@@ -1,7 +1,8 @@
 #ifndef PROJECT_INCLUDE_CUSTOM_RECURSION_H_
-#include <stddef.h>
 
 #define PROJECT_INCLUDE_CUSTOM_RECURSION_H_
+
+#include <stddef.h>
 
 void custom_recursion(int n);
 
