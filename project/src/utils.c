@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-size_t timer_from(unsigned char from, unsigned char add) {
+size_t timer_from(unsigned char from, int add) {
     size_t counter = 0;
     int num = 0;
 
@@ -11,34 +11,28 @@ size_t timer_from(unsigned char from, unsigned char add) {
         from += 1;
     }
 
-    for (unsigned char i = from; i > 0; --i) {
+    for (size_t i = from + add; i > 0; --i) {
         ++counter;
-        num = (int) i + (int) add;
+        num = (int) i;
         printf("%d ", num);
     }
 
     num -= 1;
     ++counter;
+
     printf("%d", num);
-
-    for (unsigned char i = add; i > 0; --i) {
-        ++counter;
-        int number = (int) i -1;
-        printf(" %d", number);
-    }
-
     printf("\n");
     return counter;
 }
 
 int custom_pow(int base, int power) {
     int res = base;
-    if (power != 0) {
-        for (int i=1; i < power; ++i) {
+    if (!power) {
+        return 1;
+    } else {
+        for (int i = 1; i < power; ++i) {
         res *= base;
         }
-    } else {
-        res = 1;
     }
     return res;
 }

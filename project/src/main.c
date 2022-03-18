@@ -5,17 +5,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int atoi(const char *str);
-enum MAIN_CONST {
+enum MAIN_ERRORS {
     ERR_ARGS_COUNT = -1,
-    ERR_WRONG_FLG = -2,
+    ERR_WRONG_FLG = -2
+};
+
+enum MAIN_CONST {
     TST_FOO_FIX = 1,
     TST_FOO_IMPL,
     TST_MOD_IMPL,
     TST_MOD_LASTIMPL
 };
 
-//  val-grint
 /* NOTE(stitaevskiy):
  * We use `atoi` function just for simplification and code reducing.
  * This function doesn't report conversation errors.
@@ -36,15 +37,17 @@ int main(int argc, const char** argv) {
         return ERR_ARGS_COUNT;
     }
 
-    int Test_case = atoi(argv[1]);
+    int Test_case = (int) strtol(argv[1], NULL, 0);
     const char* data;
     data = argv[2];
 
     switch (Test_case) {
         case TST_FOO_FIX: {
-            int to = atoi(data);
-            unsigned char add = 0;
-            if (to > 255) add = 255;
+            int to = (int) strtol(data, NULL, 0);
+            int add = 0;
+            if (to > 255) {
+				add = 255;
+			}
             size_t ticks_count = 0;
             if (to > 0) {
                 ticks_count = timer_from(to, add);
@@ -54,8 +57,8 @@ int main(int argc, const char** argv) {
         }
         case TST_FOO_IMPL: {
             if (argc == 4) {
-                int base = atoi(data);
-                int pow =  atoi(argv[3]);
+                int base = (int) strtol(data, NULL, 0);
+                int pow =  (int) strtol(argv[3], NULL, 0);
                 int res = custom_pow(base, pow);
                 printf("%d\n", res);
                 break;
@@ -64,13 +67,13 @@ int main(int argc, const char** argv) {
             }
         }
         case TST_MOD_IMPL: {
-            int num = atoi(data);
+            int num = (int) strtol(data, NULL, 0);
             int res = custom_check_simplicity(num);
             printf("%d", res);
             break;
         }
         case TST_MOD_LASTIMPL: {
-            int n = atoi(data);
+            int n = (int) strtol(data, NULL, 0);
             custom_recursion(n);
             break;
         }

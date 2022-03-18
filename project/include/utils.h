@@ -4,7 +4,7 @@
 #define PROJECT_INCLUDE_UTILS_H_
 
 
-size_t timer_from(unsigned char from, unsigned char add);
+size_t timer_from(unsigned char from, int add);
 
 int custom_pow(int base, int power);
 
