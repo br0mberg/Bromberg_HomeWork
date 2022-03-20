@@ -4,6 +4,6 @@
 
 void check_error_strtol(char** end) {
     if (end == NULL) {
-        printf("ERROR: INVALID STRING");
+        printf("ERROR: INVALID STRING\n");
     }
 }

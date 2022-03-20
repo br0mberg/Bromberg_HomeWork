@@ -25,14 +25,14 @@ int main(int argc, const char** argv) {
 
 	char* end = NULL;
 
-    int Test_case = (int) strtol(argv[1], &end, 0);
+    int test_case = (int) strtol(argv[1], &end, 0);
 	check_error_strtol(&end);
 	end = NULL;
 
     const char* data;
     data = argv[2];
 
-    switch (Test_case) {
+    switch (test_case) {
         case TST_FOO_FIX: {
             int to = (int) strtol(data, &end, 0);
 			check_error_strtol(&end);
@@ -61,9 +61,7 @@ int main(int argc, const char** argv) {
                 int pow =  (int) strtol(argv[3], &end, 0);
 				check_error_strtol(&end);
 
-                int res = custom_pow(base, pow);
-
-                printf("%d\n", res);
+                printf("%d\n", custom_pow(base, pow));
 
                 break;
             } else {
@@ -74,9 +72,7 @@ int main(int argc, const char** argv) {
             int num = (int) strtol(data, &end, 0);
 			check_error_strtol(&end);
 
-            int res = custom_check_simplicity(num);
-
-            printf("%d", res);
+            printf("%d", custom_check_simplicity(num));
 
             break;
         }
