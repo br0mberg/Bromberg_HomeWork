@@ -1,8 +1,8 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../include/utils.h"
 #include "../include/check_simplicity.h"
+#include "../include/utils.h"
 #include "../include/custom_recursion.h"
 #include "../include/check_error_strtol.h"
 
