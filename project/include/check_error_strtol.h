@@ -1,6 +1,0 @@
-#ifndef PROJECT_INCLUDE_CHECK_ERROR_STRTOL_H_
-#define PROJECT_INCLUDE_CHECK_ERROR_STRTOL_H_
-
-void check_error_strtol(char** end);
-
-#endif  // PROJECT_INCLUDE_CHECK_ERROR_STRTOL_H_
