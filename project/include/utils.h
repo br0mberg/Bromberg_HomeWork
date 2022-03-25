@@ -7,4 +7,3 @@ size_t timer_from(unsigned char from);
 // int custom_pow(int base, int power);
 
 #endif //UTILS_H
-
