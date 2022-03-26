@@ -2,7 +2,8 @@
 #define PROJECT_INCLUDE_BLACKRECORD_H_
 
 #include <stdio.h>
+#include "../include/structmasterrecord.h"
 
-void blackRecord(FILE *ofPTR, FILE *ofPTR_2, FILE *blackrecord, Data *client_data, Data *transfer);
+void blackRecord(const char* fname_record, const char* fname_transaction, const char* fname_blackrecord);
 
-#endif // PROJECT_INCLUDE_BLACKRECORD_H_
+#endif  // PROJECT_INCLUDE_BLACKRECORD_H_

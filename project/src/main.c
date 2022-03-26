@@ -1,77 +1,42 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include "../include/structmasterrecord.h"
 #include "../include/masterwrite.h"
 #include "../include/transactionwrite.h"
 #include "../include/blackrecord.h"
-#define filename "transaction.dat";
 
-struct masterRecord {
-	int Number;
-	char Name[20];
-	char Surname[20];
-	char addres[30];
-	char TelNumber[15];
-	double indebtedness;
-	double credit_limit;
-	double cash_payments;
+#define FILENAME_RECORD "record.dat"
+#define FILENAME_TRANSACTION "transaction.dat"
+#define FILENAME_BLACKRECORD "blackrecord.dat"
+
+enum MAIN_CHOICE {
+	RECORD_CHOICE = 1,
+	TRANSACTION_CHOICE,
+	BLACKRECORD_CHOICE
 };
 
-typedef struct masterRecord Data;
-
 int main(void) {
-    int choice = 0;
-	FILE *Ptr, *Ptr_2, *blackrecord;
-	Data client_data, transfer;
-	printf("%s", "please enter action\n1 enter data client:\n2 enter data transaction:\n3 update base\n");
-	while (scanf("%d", &choice) != -1)
-	{
-		switch (choice)
-		{
-		case 1:
-			Ptr = fopen("record.dat", "r+");
-			if (Ptr == NULL)
-			{
-				puts("Not acess");
-			}
-			else
-			{
-				masterWrite(Ptr, client_data);
-				fclose(Ptr);
-			}
+int choice = 0;
+while (scanf("%d", &choice) != -1) {
+printf("%s", "please enter action\n1 - enter data client:\n2 - enter data transaction:\n3 - update base:\n\n");
+switch (choice) {
+		case RECORD_CHOICE:
+			masterwrite(FILENAME_RECORD);
+
 			break;
-		case 2:
-			Ptr = fopen(filename, "r+");
-			if (Ptr == NULL)
-			{
-				puts("Not acess");
-			}
-			else
-			{
-				transactionWrite(Ptr, transfer);
-				fclose(Ptr);
-			}
+		case TRANSACTION_CHOICE:
+			transactionwrite(FILENAME_TRANSACTION);
+
 			break;
-		case 3:
-			Ptr = fopen("record.dat", "r");
-			Ptr_2 = fopen("transaction.dat", "r");
-			blackrecord = fopen("blackrecord.dat", "w");
-			if (Ptr == NULL || Ptr_2 == NULL || blackRecord == NULL)
-			{
-				puts("exit");
-			}
-			else
-			{
-				blackRecord(Ptr, Ptr_2, blackrecord, client_data, transfer);
-				free(Ptr);
-				fclose(Ptr);
-				fclose(Ptr_2);
-				fclose(blackrecord);
-			}
+		case BLACKRECORD_CHOICE:
+			blackRecord(FILENAME_RECORD, FILENAME_TRANSACTION, FILENAME_BLACKRECORD);
+
 			break;
 		default:
 			puts("error");
+
 			break;
 		}
-		printf("%s", "please enter action\n1 enter data client:\n2 enter data transaction:\n3 update base\n");
 	}
 	return 0;
 }
