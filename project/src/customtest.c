@@ -18,7 +18,7 @@ int main() {
         &Record_expected_data.Number, Record_expected_data.Name, Record_expected_data.Surname,
         Record_expected_data.addres, Record_expected_data.TelNumber, &Record_expected_data.indebtedness,
         &Record_expected_data.credit_limit, &Record_expected_data.cash_payments);
-    
+
     ofPTR = fopen(filename, "w+");
 
     write_to_file(ofPTR);

@@ -15,7 +15,7 @@ void output_data(int outmode, FILE* file, Data data) {
             fprintf(file, "%-12d%-11s%-11s%-16s%20s%12.2f%12.2f%12.2f\n",
             data.Number, data.Name, data.Surname,
             data.addres, data.TelNumber, data.indebtedness,
-            data.credit_limit,data.cash_payments);
+            data.credit_limit, data.cash_payments);
 
             break;
         case TRANSFER_OUTMODE:
