@@ -24,7 +24,7 @@ int main(void) {
         "3 - update base:\n\n");
         switch (choice) {
                 case RECORD_CLIENT_CHOICE:
-                    recordclientdata(FILENAME_RECORD);
+                    recordclientdata(FILENAME_RECORD, Client);
 
                     break;
                 case RECORD_TRANSACTION_CHOICE:

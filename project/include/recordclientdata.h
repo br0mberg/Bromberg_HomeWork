@@ -3,6 +3,6 @@
 
 #include "../include/out_inputdata.h"
 
-void recordclientdata(const char* fname);
+void recordclientdata(const char* fname, Data data);
 
 #endif  // PROJECT_INCLUDE_RECORDCLIENTDATA_H_
