@@ -1,5 +1,4 @@
 #include "../include/updclientdata.h"
-#include "../include/structs.h"
 
 void updclientdata(const char* fname_record, const char* fname_transaction, const char* fname_blackrecord) {
     FILE *ofPTR, *ofPTR_2, *blackrecord;
