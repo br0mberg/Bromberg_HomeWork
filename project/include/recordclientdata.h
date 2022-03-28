@@ -1,9 +1,9 @@
 #ifndef PROJECT_INCLUDE_MASTERWRITE_H_
 #define PROJECT_INCLUDE_MASTERWRITE_H_
 
-#include <stdio.h>
-#include "../include/structmasterrecord.h"
+#include "../include/structs.h"
+#include "../include/out_inputdata.h"
 
-void masterwrite(const char* fname);
+void recordclientdata(const char* fname);
 
 #endif  // PROJECT_INCLUDE_MASTERWRITE_H_

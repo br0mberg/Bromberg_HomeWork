@@ -1,9 +1,8 @@
 #ifndef PROJECT_INCLUDE_TRANSACTIONWRITE_H_
 #define PROJECT_INCLUDE_TRANSACTIONWRITE_H_
 
-#include <stdio.h>
-#include "structmasterrecord.h"
+#include "../include/structs.h"
 
-void transactionwrite(const char* fname);
+void recordtransactiondata(const char* fname);
 
 #endif  // PROJECT_INCLUDE_TRANSACTIONWRITE_H_
