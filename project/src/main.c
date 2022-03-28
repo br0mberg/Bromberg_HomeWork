@@ -2,6 +2,7 @@
 #include "../include/recordtransactiondata.h"
 #include "../include/updclientdata.h"
 #include "../include/customtest.h"
+#include "../include/structs.h"
 
 #define FILENAME_RECORD "record.dat"
 #define FILENAME_TRANSACTION "transaction.dat"
