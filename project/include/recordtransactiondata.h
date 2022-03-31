@@ -3,8 +3,6 @@
 
 #include "../include/out_inputdata.h"
 
-Data transfer;
-
 void recordtransactiondata(const char* fname);
 
 #endif  // PROJECT_INCLUDE_RECORDTRANSACTIONDATA_H_

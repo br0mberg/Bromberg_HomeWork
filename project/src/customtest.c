@@ -2,7 +2,10 @@
 
 int main() {
     const char* filename = "customtest.dat";
-    FILE *ofPTR;
+    FILE *custestfile;
+
+    Data Record_expected_data = {0};
+    Data Record_got_data = {0};
 
     printf("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n",
         "1 Number account: ",
@@ -19,15 +22,15 @@ int main() {
         Record_expected_data.addres, Record_expected_data.TelNumber, &Record_expected_data.indebtedness,
         &Record_expected_data.credit_limit, &Record_expected_data.cash_payments);
 
-    ofPTR = fopen(filename, "w+");
+    custestfile = fopen(filename, "w+");
 
-    write_to_file(ofPTR);
-    fclose(ofPTR);
+    write_to_file(custestfile);
+    fclose(custestfile);
 
-    ofPTR = fopen(filename, "r+");
+    custestfile = fopen(filename, "r+");
 
-    read_from_file(ofPTR);
-    fclose(ofPTR);
+    read_from_file(custestfile);
+    fclose(custestfile);
 
     if (Record_got_data.Number != Record_expected_data.Number
     || strcmp(Record_expected_data.Name, Record_got_data.Name) != 0

@@ -1,8 +1,5 @@
 #include "../include/out_inputdata.h"
 
-Data Record_expected_data;
-Data Record_got_data;
-
 void output_data(int outmode, FILE* file, Data data) {
     switch (outmode) {
         case CLIENT_OUTMODE:
@@ -31,6 +28,8 @@ void output_data(int outmode, FILE* file, Data data) {
 }
 
 void read_from_file(FILE *got_data) {
+    Data Record_got_data;
+
     if (got_data == NULL) {
         puts("Not acess");
     } else {
@@ -42,6 +41,7 @@ void read_from_file(FILE *got_data) {
 }
 
 void write_to_file(FILE* expected_data) {
+    Data Record_expected_data = {0};
     if (expected_data == NULL) {
         puts("Not acess");
     } else {

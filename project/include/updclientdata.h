@@ -3,8 +3,6 @@
 
 #include "../include/out_inputdata.h"
 
-Data Client;
-Data transfer;
 void updclientdata(const char* fname_record, const char* fname_transaction, const char* fname_blackrecord);
 
 #endif  // PROJECT_INCLUDE_UPDCLIENTDATA_H_
