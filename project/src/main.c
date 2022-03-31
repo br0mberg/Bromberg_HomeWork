@@ -14,6 +14,7 @@ enum MAIN_CHOICE {
     UPDATE_CLIENT_CHOICE
 };
 
+
 int main(void) {
     int choice = 0;
 

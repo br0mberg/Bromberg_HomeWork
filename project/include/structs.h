@@ -18,9 +18,5 @@ struct masterRecord {
 
 typedef struct masterRecord Data;
 
-Data transfer;
-Data Client;
-Data Record_got_data;
-Data Record_expected_data;
 
 #endif  // PROJECT_INCLUDE_STRUCTS_H_

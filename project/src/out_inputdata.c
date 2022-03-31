@@ -1,5 +1,8 @@
 #include "../include/out_inputdata.h"
 
+Data Record_expected_data;
+Data Record_got_data;
+
 void output_data(int outmode, FILE* file, Data data) {
     switch (outmode) {
         case CLIENT_OUTMODE:

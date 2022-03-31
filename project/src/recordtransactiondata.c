@@ -1,5 +1,4 @@
 #include "../include/recordtransactiondata.h"
-#include "../include/out_inputdata.h"
 
 void recordtransactiondata(const char* fname) {
     FILE *ofPtr;
