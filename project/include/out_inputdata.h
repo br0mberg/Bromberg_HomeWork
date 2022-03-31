@@ -5,8 +5,8 @@
 
 void output_data(int outmode, FILE* file, Data data);
 
-void read_from_file(FILE* ofPTR);
+void read_from_file(FILE* got_data);
 
-void write_to_file(FILE* ofPTR);
+void write_to_file(FILE* expected_data);
 
 #endif  // PROJECT_INCLUDE_OUT_INPUTDATA_H_

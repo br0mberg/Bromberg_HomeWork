@@ -3,7 +3,6 @@
 
 #include <string.h>
 #include <stdio.h>
-#include "../include/structs.h"
 #include "../include/out_inputdata.h"
 
 void write_to_file(FILE *ofPTR);
