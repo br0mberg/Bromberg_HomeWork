@@ -1,8 +1,8 @@
 #ifndef PROJECT_INCLUDE_RECORDTRANSACTIONDATA_H_
 #define PROJECT_INCLUDE_RECORDTRANSACTIONDATA_H_
 
-#include "../include/out_inputdata.h"
+#include "out_inputdata.h"
 
-void recordtransactiondata(const char* fname);
+void Record_transaction_data(const char* fname);
 
 #endif  // PROJECT_INCLUDE_RECORDTRANSACTIONDATA_H_

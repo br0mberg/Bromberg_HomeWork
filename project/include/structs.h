@@ -4,19 +4,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+enum STRUCT_CONST {NAME_SIZE = 20, SNAME_CONST = 20, ADDRES_CONST = 30, TNUM_CONST = 15};
 enum OUTMODE_STRUCT {CLIENT_OUTMODE = 1, TRANSFER_OUTMODE};
-struct masterRecord {
+
+struct ClientCreditData {
     int Number;
-    char Name[20];
-    char Surname[20];
-    char addres[30];
-    char TelNumber[15];
+    char Name[NAME_SIZE];
+    char Surname[SNAME_CONST];
+    char addres[ADDRES_CONST];
+    char TelNumber[TNUM_CONST];
     double indebtedness;
     double credit_limit;
     double cash_payments;
 };
 
-typedef struct masterRecord Data;
+typedef struct ClientCreditData CreditData;
 
 
 #endif  // PROJECT_INCLUDE_STRUCTS_H_

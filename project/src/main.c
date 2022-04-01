@@ -1,12 +1,12 @@
-#include "../include/recordclientdata.h"
-#include "../include/recordtransactiondata.h"
-#include "../include/updclientdata.h"
-#include "../include/customtest.h"
-#include "../include/structs.h"
+#include "recordclientdata.h"
+#include "recordtransactiondata.h"
+#include "updclientdata.h"
+#include "customtest.h"
+#include "structs.h"
 
-#define FILENAME_RECORD "record.dat"
-#define FILENAME_TRANSACTION "transaction.dat"
-#define FILENAME_BLACKRECORD "blackrecord.dat"
+#define F_RECORD "record.dat"
+#define F_TRANSACTION "transaction.dat"
+#define F_UPDATE_DATA "blackrecord.dat"
 
 enum MAIN_CHOICE {
     RECORD_CLIENT_CHOICE = 1,
@@ -25,15 +25,15 @@ int main(void) {
         "3 - update base:\n\n");
         switch (choice) {
                 case RECORD_CLIENT_CHOICE:
-                    recordclientdata(FILENAME_RECORD);
+                    Record_client_data(F_RECORD);
 
                     break;
                 case RECORD_TRANSACTION_CHOICE:
-                    recordtransactiondata(FILENAME_TRANSACTION);
+                    Record_transaction_data(F_TRANSACTION);
 
                     break;
                 case UPDATE_CLIENT_CHOICE:
-                    updclientdata(FILENAME_RECORD, FILENAME_TRANSACTION, FILENAME_BLACKRECORD);
+                    Upd_client_data(F_RECORD, F_TRANSACTION, F_UPDATE_DATA);
 
                     break;
                 default:
