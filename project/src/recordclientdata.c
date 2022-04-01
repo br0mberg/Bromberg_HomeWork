@@ -12,7 +12,7 @@ void Record_client_data(const char* fname) {
         while (scanf("%d%99s%99s%99s%99s%lf%lf%lf",
         &Client.Number, Client.Name, Client.Surname,
         Client.addres, Client.TelNumber, &Client.indebtedness,
-        &Client.credit_limit, &Client.cash_payments) == 8) {
+        &Client.credit_limit, &Client.cash_payments) == CLIENT_STRUCT_FIELDS) {
             output_data(CLIENT_OUTMODE, ClientDatafile, &Client);
         }
 

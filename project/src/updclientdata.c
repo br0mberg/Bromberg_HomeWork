@@ -20,8 +20,9 @@ const char* fname_update_client_data) {
         while (fscanf(ClientDataFile, "%d%99s%99s%99s%99s%lf%lf%lf",
         &Client.Number, Client.Name, Client.Surname, Client.addres,
         Client.TelNumber, &Client.indebtedness, &Client.credit_limit,
-        &Client.cash_payments) == 8) {
-            while (fscanf(TransactionDataFile, "%d %lf", &transfer.Number, &transfer.cash_payments) == 2) {
+        &Client.cash_payments) == CLIENT_STRUCT_FIELDS) {
+            while (fscanf(TransactionDataFile, "%d %lf", &transfer.Number, &transfer.cash_payments)
+            == TRASNSATION_STRUCT_FIELDS) {
                 if (Client.Number == transfer.Number && transfer.cash_payments != 0) {
                     Client.credit_limit += transfer.cash_payments;
                 }

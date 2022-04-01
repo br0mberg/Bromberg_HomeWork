@@ -8,7 +8,7 @@ void Record_transaction_data(const char* fname) {
     if (transactionfile == NULL) {
        puts("Not acess");
     } else {
-        while (scanf("%d %lf", &transfer.Number, &transfer.cash_payments) == 2) {
+        while (scanf("%d %lf", &transfer.Number, &transfer.cash_payments) == TRASNSATION_STRUCT_FIELDS) {
             output_data(TRANSFER_OUTMODE, transactionfile, &transfer);
         }
 

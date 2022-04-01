@@ -20,7 +20,7 @@ int main() {
     if (scanf("%d%99s%99s%99s%99s%lf%lf%lf",
         &Record_expected_data.Number, Record_expected_data.Name, Record_expected_data.Surname,
         Record_expected_data.addres, Record_expected_data.TelNumber, &Record_expected_data.indebtedness,
-        &Record_expected_data.credit_limit, &Record_expected_data.cash_payments) != 8) {
+        &Record_expected_data.credit_limit, &Record_expected_data.cash_payments) != CLIENT_STRUCT_FIELDS) {
             printf("ERROR_INPUT_CUSTOM_TEST_DATA");
         }
 
