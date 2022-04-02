@@ -3,6 +3,6 @@
 
 #include "out_inputdata.h"
 
-void Record_transaction_data(const char* fname);
+int Record_transaction_data(const char* fname);
 
 #endif  // PROJECT_INCLUDE_RECORDTRANSACTIONDATA_H_

@@ -2,7 +2,10 @@
 #define PROJECT_INCLUDE_OUT_INPUTDATA_H_
 
 #include "structs.h"
+#include <string.h>
 
-void output_data(int outmode, FILE* file, CreditData *data);
+int output_data_client(FILE* file, CreditData *data);
+
+int output_data_transaction(FILE *file, CreditData *data);
 
 #endif  // PROJECT_INCLUDE_OUT_INPUTDATA_H_
