@@ -2,9 +2,16 @@
 #define PROJECT_INCLUDE_MATRIX_H_
 
 #include <stddef.h>
+#include <stdio.h>
+#include <malloc.h>
 
+#define ERROR -1
+#define MATRIX_FIELDS_SIZE_T 2
 
 typedef struct Matrix {
+    size_t rows;
+    size_t cols;
+    double *values;
 } Matrix;
 
 // Init/release operations
