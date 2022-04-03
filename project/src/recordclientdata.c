@@ -7,6 +7,10 @@ int Record_client_data(const char* fname) {
 
     if (!clientDatafile) {
         fprintf(stderr, "Not acess");
+        if (fclose(clientDatafile)) {
+            fprintf(stderr, "ERROR_CLOSE_FILE");
+            return ERROR_ACTION_WITH_FILE;
+        }
         return ERROR_ACTION_WITH_FILE;
     }
 

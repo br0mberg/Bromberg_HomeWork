@@ -7,6 +7,10 @@ int Record_transaction_data(const char* fname) {
 
     if (!transactionfile) {
        fprintf(stderr, "Not acess");
+       if (fclose(transactionfile)) {
+        fprintf(stderr, "ERROR_CLOSE_FILE");
+        return ERROR_ACTION_WITH_FILE;
+       }
        return ERROR_ACTION_WITH_FILE;
     }
     while (scanf("%d %lf", &transfer.Number, &transfer.cash_payments) == TRANSACTION_STRUCT_FIELDS) {
