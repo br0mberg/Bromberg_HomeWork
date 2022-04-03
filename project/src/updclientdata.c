@@ -13,6 +13,15 @@ const char* fname_update_client_data) {
 
     if (!clientDataFile || !transactionDataFile || !updateClientDataFile) {
         fprintf(stderr, "Not acess");
+        if (clientDataFile) {
+            fclose(clientDataFile);
+        }
+        if (transactionDataFile) {
+            fclose(transactionDataFile);
+        }
+        if (updateClientDataFile) {
+            fclose(updateClientDataFile);
+        }
         return ERROR_ACTION_WITH_FILE;
     }
 

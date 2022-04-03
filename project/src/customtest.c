@@ -11,10 +11,6 @@ int main() {
 
     if (!custestfile) {
         fprintf(stderr, "ERROR_OPEN_FILE_CUSTEST");
-        if (fclose(custestfile)) {
-            printf("ERROR_CLOSE_FILE");
-            return ERROR_ACTION_WITH_FILE;
-        }
         return ERROR_ACTION_WITH_FILE;
     }
 
@@ -25,10 +21,6 @@ int main() {
 
     if (!(custestfile = fopen(filename, "r+"))) {
         fprintf(stderr, "ERROR_OPEN_FILE_CUSTEST");
-        if (fclose(custestfile)) {
-            printf("ERROR_CLOSE_FILE");
-            return ERROR_ACTION_WITH_FILE;
-        }
         return ERROR_ACTION_WITH_FILE;
     }
 
@@ -36,7 +28,6 @@ int main() {
 
     if (fclose(custestfile)) {
         printf("ERROR_CLOSE_FILE");
-        return ERROR_ACTION_WITH_FILE;
     }
 
     check_similar_data(&Record_got_data, &Record_expected_data);
