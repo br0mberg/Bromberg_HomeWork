@@ -1,6 +1,6 @@
 #include "recordclientdata.h"
 
-int Record_client_data(const char* fname) {
+int record_client_data(const char* fname) {
     FILE *clientDatafile = fopen(fname, "r+");
 
     CreditData Client;

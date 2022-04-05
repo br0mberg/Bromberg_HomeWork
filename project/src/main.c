@@ -25,19 +25,19 @@ int main(void) {
         "3 - update base:\n\n");
         switch (choice) {
                 case RECORD_CLIENT_CHOICE:
-                    Record_client_data(F_RECORD);
+                    record_client_data(F_RECORD);
 
                     break;
                 case RECORD_TRANSACTION_CHOICE:
-                    Record_transaction_data(F_TRANSACTION);
+                    record_transaction_data(F_TRANSACTION);
 
                     break;
                 case UPDATE_CLIENT_CHOICE:
-                    Upd_client_data(F_RECORD, F_TRANSACTION, F_UPDATE_DATA);
+                    upd_client_data(F_RECORD, F_TRANSACTION, F_UPDATE_DATA);
 
                     break;
                 default:
-                    puts("error");
+                    fprintf(stderr, "error");
 
                     break;
                 }

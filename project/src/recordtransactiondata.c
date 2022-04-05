@@ -1,6 +1,6 @@
 #include "recordtransactiondata.h"
 
-int Record_transaction_data(const char* fname) {
+int record_transaction_data(const char* fname) {
     FILE *transactionfile;
     CreditData transfer = {0};
     transactionfile = fopen(fname, "r+");

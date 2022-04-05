@@ -1,12 +1,12 @@
 #include "updclientdata.h"
 
-int Upd_client_data(const char* fname_client_data, const char* fname_transaction_data,
-const char* fname_update_client_data) {
-    FILE *clientDataFile = fopen(fname_client_data, "r+");
+int upd_client_data(const char* fname_client, const char* fname_transaction,
+const char* fname_update) {
+    FILE *clientDataFile = fopen(fname_client, "r+");
 
-    FILE *transactionDataFile = fopen(fname_transaction_data, "r+");
+    FILE *transactionDataFile = fopen(fname_transaction, "r+");
 
-    FILE *updateClientDataFile = fopen(fname_update_client_data, "w+");
+    FILE *updateClientDataFile = fopen(fname_update, "w+");
 
     CreditData Client;
     CreditData transfer;
@@ -25,10 +25,7 @@ const char* fname_update_client_data) {
         return ERROR_ACTION_WITH_FILE;
     }
 
-    while (fscanf(clientDataFile, "%d%99s%99s%99s%99s%lf%lf%lf",
-    &Client.Number, Client.Name, Client.Surname, Client.addres,
-    Client.TelNumber, &Client.indebtedness, &Client.credit_limit,
-    &Client.cash_payments) == CLIENT_STRUCT_FIELDS) {
+    while (input_data(clientDataFile, &Client) == CLIENT_STRUCT_FIELDS) {
         while (fscanf(transactionDataFile, "%d %lf", &transfer.Number, &transfer.cash_payments)
         == TRANSACTION_STRUCT_FIELDS) {
             if (Client.Number == transfer.Number && transfer.cash_payments != 0) {

@@ -8,4 +8,6 @@ int output_data_client(FILE* file, CreditData *data);
 
 int output_data_transaction(FILE *file, CreditData *data);
 
+int input_data(FILE* file, CreditData *Client);
+
 #endif  // PROJECT_INCLUDE_OUT_INPUTDATA_H_

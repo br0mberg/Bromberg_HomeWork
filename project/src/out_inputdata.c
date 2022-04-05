@@ -56,6 +56,13 @@ int write_to_file(FILE* expected_data, CreditData *data) {
     return 0;
 }
 
+int input_data(FILE* file, CreditData *Client) {
+    return fscanf(file, "%d%99s%99s%99s%99s%lf%lf%lf",
+    &Client->Number, Client->Name, Client->Surname, Client->addres,
+    Client->TelNumber, &Client->indebtedness, &Client->credit_limit,
+    &Client->cash_payments);
+}
+
 int record_struct_custest(CreditData *data) {
     printf("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n",
         "1 Number account: ",
