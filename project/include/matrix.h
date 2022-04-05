@@ -6,6 +6,8 @@
 #include <malloc.h>
 
 #define ERROR -1
+#define TRUE 1
+#define FALSE 0
 #define MATRIX_FIELDS_SIZE_T 2
 
 typedef struct Matrix {
@@ -24,6 +26,7 @@ int get_rows(const Matrix* matrix, size_t* rows);
 int get_cols(const Matrix* matrix, size_t* cols);
 int get_elem(const Matrix* matrix, size_t row, size_t col, double* val);
 int set_elem(Matrix* matrix, size_t row, size_t col, double val);
+int check_order_matrix(const Matrix* l, const Matrix* r);
 
 // Math operations
 Matrix* mul_scalar(const Matrix* matrix, double val);

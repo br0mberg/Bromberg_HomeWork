@@ -59,6 +59,108 @@ int get_elem(const Matrix* matrix, size_t row, size_t col, double* val) {
     return 0;
 }
 
+int get_rows(const Matrix* matrix, size_t* rows) {
+    rows = matrix->rows;
+    return 0;
+}
+
+int get_cols(const Matrix* matrix, size_t* cols) {
+    cols = matrix->cols;
+    return 0;
+}
+
+Matrix* mul_scalar(const Matrix* matrix, double val) {
+    size_t cols = matrix->cols;
+    size_t rows = matrix->rows;
+    Matrix* result_matrix = create_matrix(rows, cols);
+    for (size_t i=0; i < rows; ++i) {
+        for (size_t j=0; j < cols; ++j) {
+            double elem = 0;
+            get_elem(matrix, i, j, &elem);
+            set_elem(result_matrix, i, j, elem * val));
+        }
+    }
+    return result_matrix;
+}
+
+Matrix* transp(const Matrix* matrix) {
+    size_t rows = matrix->rows;
+    size_t cols = matrix->cols;
+    Matrix* trans_matrix = create_matrix(cols, rows);
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j < cols; ++j) {
+            double elem = 0;
+            get_elem(matrix, i, j, &elem);
+            set_elem(trans_matrix, j, i, elem);
+        }
+    }
+    return trans_matrix;
+}
+
+int check_order_matrix(const Matrix* l, const Matrix* r) {
+    if (l->rows == r->rows && l->cols == r->cols) {
+        return TRUE;
+    }
+    return FALSE;
+}
+Matrix* sum(const Matrix* l, const Matrix* r) {
+    Matrix* sum_matrix = create_matrix(r->rows, r->cols);
+    if (!check_order_matrix(const Matrix* l, const Matrix* r)) {
+        printf("MATRICES OF DIFFERENT SIZE");
+    } else {
+        for (size_t i = 0; i < r->rows; ++i) {
+            for (size_t j = 0; j < r->cols; ++j) {
+                double a = 0;
+                double b = 0;
+                get_elem(l, i, j, &a);
+                get_elem(r, i, j, &b);
+                set_elem(sum_matrix, i, j, a + b);
+            }
+        }
+    }
+    return sum_matrix;
+}
+
+Matrix* sub(const Matrix* l, const Matrix* r) {
+    Matrix* sub_matrix = create_matrix(r->rows, r->cols);
+    if (!check_order_matrix(const Matrix* l, const Matrix* r)) {
+        printf("MATRICES OF DIFFERENT SIZE");
+    } else {
+        for (size_t i = 0; i < r->rows; ++i) {
+            for (size_t j = 0; j < r->cols; ++j) {
+                double a = 0;
+                double b = 0;
+                get_elem(l, i, j, &a);
+                get_elem(r, i, j, &b);
+                set_elem(sub_matrix, i, j, a - b);
+            }
+        }
+    }
+    return sub_matrix;
+}
+
+Matrix* mul(const Matrix* l, const Matrix* r) {
+    Matrix* mul_matrix = create_matrix(r->rows, r->cols);
+    if (!check_order_matrix(const Matrix* l, const Matrix* r)) {
+        printf("MATRICES OF DIFFERENT SIZE");
+    } else {
+        for (size_t i = 0; i < r->rows; ++i) {
+            for (size_t j = 0; j < r->cols; ++j) {
+                double a = 0;
+                double b = 0;
+                get_elem(l, i, j, &a);
+                get_elem(r, i, j, &b);
+                set_elem(mul_matrix, i, j, a * b);
+            }
+        }
+    }
+    return mul_matrix;
+}
+
+int det(const Matrix* matrix, double* val) {
+    
+}
+
 void free_matrix(Matrix *matrix) {
     if (!matrix) {
         fprintf(stderr, "Matrix is null");
@@ -66,5 +168,3 @@ void free_matrix(Matrix *matrix) {
     free(matrix->values);
     free(matrix);
 }
-
-
