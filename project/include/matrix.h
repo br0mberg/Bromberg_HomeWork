@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <malloc.h>
+#include <math.h>
 
 #define ERROR -1
 #define TRUE 1
