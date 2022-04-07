@@ -1,23 +1,20 @@
 #include "recordclientdata.h"
 
 int record_client_data(const char* fname) {
-    FILE *clientDatafile = fopen(fname, "r+");
+    FILE *client_data_file = fopen(fname, "r+");
 
-    CreditData Client;
+    credit_data_t client = {0};
 
-    if (!clientDatafile) {
+    if (!client_data_file) {
         fprintf(stderr, "Not acess");
         return ERROR_ACTION_WITH_FILE;
     }
 
-    while (scanf("%d%99s%99s%99s%99s%lf%lf%lf",
-    &Client.Number, Client.Name, Client.Surname,
-    Client.addres, Client.TelNumber, &Client.indebtedness,
-    &Client.credit_limit, &Client.cash_payments) == CLIENT_STRUCT_FIELDS) {
-        output_data_client(clientDatafile, &Client);
+    while (input_data(&client) == CLIENT_STRUCT_FIELDS) {
+        output_data_client(client_data_file, &client);
     }
 
-    if (fclose(clientDatafile)) {
+    if (fclose(client_data_file)) {
         fprintf(stderr, "ERROR_CLOSE_FILE");
         return ERROR_ACTION_WITH_FILE;
     }

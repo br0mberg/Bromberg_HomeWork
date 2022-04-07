@@ -8,7 +8,7 @@
 enum DEF_STRUCT_FIELDS {CLIENT_STRUCT_FIELDS = 8, TRANSACTION_STRUCT_FIELDS = 2};
 enum STRUCT_CONST {NAME_SIZE = 20, SNAME_CONST = 20, ADDRES_CONST = 30, TNUM_CONST = 15};
 
-struct ClientCreditData {
+struct client_credit_data {
     int Number;
     char Name[NAME_SIZE];
     char Surname[SNAME_CONST];
@@ -19,7 +19,7 @@ struct ClientCreditData {
     double cash_payments;
 };
 
-typedef struct ClientCreditData CreditData;
+typedef struct client_credit_data credit_data_t;
 
 
 #endif  // PROJECT_INCLUDE_STRUCTS_H_

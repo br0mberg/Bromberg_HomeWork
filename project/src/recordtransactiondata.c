@@ -1,19 +1,19 @@
 #include "recordtransactiondata.h"
 
 int record_transaction_data(const char* fname) {
-    FILE *transactionfile;
-    CreditData transfer = {0};
-    transactionfile = fopen(fname, "r+");
+    FILE *transaction_file = fopen(fname, "r+");
+    credit_data_t transfer = {0};
 
-    if (!transactionfile) {
+    if (!transaction_file) {
        fprintf(stderr, "Not acess");
        return ERROR_ACTION_WITH_FILE;
     }
+
     while (scanf("%d %lf", &transfer.Number, &transfer.cash_payments) == TRANSACTION_STRUCT_FIELDS) {
-        output_data_transaction(transactionfile, &transfer);
+        output_data_transaction(transaction_file, &transfer);
     }
 
-    if (fclose(transactionfile)) {
+    if (fclose(transaction_file)) {
         fprintf(stderr, "ERROR_CLOSE_FILE");
         return ERROR_ACTION_WITH_FILE;
     }
