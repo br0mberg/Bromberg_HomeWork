@@ -26,8 +26,8 @@ const char* fname_update) {
     credit_data_t client;
     credit_data_t transfer;
 
-    while (input_data_to_file(client_data_file, &client) == CLIENT_STRUCT_FIELDS) {
-        while (fscanf(transaction_data_file, "%d %lf", &transfer.Number, &transfer.cash_payments)
+    while (input_data_client_to_file(client_data_file, &client) == CLIENT_STRUCT_FIELDS) {
+        while (input_data_transfer_to_file(transaction_data_file, &transfer)
         == TRANSACTION_STRUCT_FIELDS) {
             if (client.Number == transfer.Number && transfer.cash_payments != 0) {
                 client.credit_limit += transfer.cash_payments;

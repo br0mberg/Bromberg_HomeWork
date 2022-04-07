@@ -37,10 +37,7 @@ int read_from_file(FILE *got_data, credit_data_t *data) {
         fprintf(stderr, "Not acess");
         return ERROR_ACTION_WITH_FILE;
     }
-    fscanf(got_data, "%d%99s%99s%99s%99s%lf%lf%lf",
-        &data->Number, data->Name, data->Surname, data->addres,
-        data->TelNumber, &data->indebtedness, &data->credit_limit,
-        &data->cash_payments);
+    input_data_client_to_file(got_data, data);
 
     return 0;
 }
@@ -56,19 +53,28 @@ int write_to_file(FILE* expected_data, credit_data_t *data) {
     return 0;
 }
 
-int input_data_to_file(FILE* file, credit_data_t *client) {
+int input_data_client_to_file(FILE* file, credit_data_t *client) {
     return fscanf(file, "%d%99s%99s%99s%99s%lf%lf%lf",
     &client->Number, client->Name, client->Surname, client->addres,
     client->TelNumber, &client->indebtedness, &client->credit_limit,
     &client->cash_payments);
 }
 
-int input_data(credit_data_t *client) {
+int input_data_client(credit_data_t *client) {
     return scanf("%d%99s%99s%99s%99s%lf%lf%lf",
         &client->Number, client->Name, client->Surname,
         client->addres, client->TelNumber, &client->indebtedness,
         &client->credit_limit, &client->cash_payments);
 }
+
+int input_data_transfer_to_file(FILE* file, credit_data_t *transfer) {
+    return fscanf(file, "%d %lf", &transfer->Number, &transfer->cash_payments);
+}
+
+int input_data_transfer(credit_data_t *transfer) {
+    return scanf("%d %lf", &transfer->Number, &transfer->cash_payments);
+}
+
 int record_struct_custest(credit_data_t *data) {
     printf("%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n",
         "1 Number account: ",
@@ -80,7 +86,7 @@ int record_struct_custest(credit_data_t *data) {
         "7 Client credit limit: ",
         "8 Client cash payments: ");
 
-    if (input_data(data) != CLIENT_STRUCT_FIELDS) {
+    if (input_data_client(data) != CLIENT_STRUCT_FIELDS) {
             fprintf(stderr, "ERROR_INPUT_CUSTOM_TEST_DATA");
             return ERROR_ACTION_WITH_FILE;
         }

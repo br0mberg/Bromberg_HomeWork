@@ -10,7 +10,7 @@ int record_client_data(const char* fname) {
         return ERROR_ACTION_WITH_FILE;
     }
 
-    while (input_data(&client) == CLIENT_STRUCT_FIELDS) {
+    while (input_data_client(&client) == CLIENT_STRUCT_FIELDS) {
         output_data_client(client_data_file, &client);
     }
 

@@ -9,7 +9,7 @@ int record_transaction_data(const char* fname) {
        return ERROR_ACTION_WITH_FILE;
     }
 
-    while (scanf("%d %lf", &transfer.Number, &transfer.cash_payments) == TRANSACTION_STRUCT_FIELDS) {
+    while (input_data_transfer(&transfer) == TRANSACTION_STRUCT_FIELDS) {
         output_data_transaction(transaction_file, &transfer);
     }
 
