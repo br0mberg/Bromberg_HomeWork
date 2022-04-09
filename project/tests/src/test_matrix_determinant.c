@@ -52,7 +52,6 @@ void _test_determinant(const char *in, double expected_det, double eps) {
     int res = det(matrix, &result_det);
     assert((res == 0) && "Getting determinant was failed");
     assert((double_equals(result_det, expected_det, eps)) && "The determinants do not coincide");
-
     free_matrix(matrix);
 }
 

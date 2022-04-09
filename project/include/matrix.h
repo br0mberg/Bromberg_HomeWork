@@ -6,16 +6,31 @@
 #include <malloc.h>
 #include <math.h>
 
-#define ERROR -1
-#define TRUE 1
-#define FALSE 0
+#define ERROR_MEM_MESSAGE "\nERROR WITH MEM FOR MATRIX\n"
+#define ERROR_CREATE_MATRIX "\nERROR TO CREATE MATRIX\n"
+#define ERROR_MATRIX_IS_NULL "\nERROR - MATRIX IS NULL\n"
+#define ERROR_GET_VAL "\nERROR - CAN'T GET VALUE\n"
+#define ERROR_SIZE_MATRIX "\nERROR - INCORRECT SIZE MATRIX\n"
+#define ERROR_DETERMINANT "\nERROR - INCORRECT DET FOR OPERATION\n"
+
 #define MATRIX_FIELDS_SIZE_T 2
+
+enum PROGRAM_CONST {
+    ERROR = -1,
+    FALSE,
+    TRUE
+};
+
 
 typedef struct Matrix {
     size_t rows;
     size_t cols;
     double *values;
 } Matrix;
+
+// Assist operations
+int check_order_matrix(const Matrix* l, const Matrix* r);
+int checking_for_squariness(const Matrix* matrix);
 
 // Init/release operations
 Matrix* create_matrix_from_file(const char* path_file);
@@ -27,7 +42,7 @@ int get_rows(const Matrix* matrix, size_t* rows);
 int get_cols(const Matrix* matrix, size_t* cols);
 int get_elem(const Matrix* matrix, size_t row, size_t col, double* val);
 int set_elem(Matrix* matrix, size_t row, size_t col, double val);
-int check_order_matrix(const Matrix* l, const Matrix* r);
+
 
 // Math operations
 Matrix* mul_scalar(const Matrix* matrix, double val);

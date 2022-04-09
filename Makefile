@@ -16,7 +16,11 @@ TST_HDRS = \
 		   project/tests/include
 
 TST_SRCS = \
-           project/src/matrix.c \
+           project/src/mathfuncmx.c \
+		   project/src/extrafuncmx.c \
+		   project/src/lifefuncmx.c \
+		   project/src/assistfuncmx.c \
+		   project/src/basedfuncmx.c \
 		   project/tests/src/*.c
 
 .PHONY: all check build test memtest testextra memtestextra rebuild clean
