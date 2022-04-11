@@ -6,6 +6,10 @@ int set_elem(Matrix* matrix, size_t row, size_t col, double val) {
 }
 
 int get_elem(const Matrix* matrix, size_t row, size_t col, double* val) {
+    if (row >= matrix->rows || col >= matrix->cols) {
+        fprintf(stderr, ERROR_GET_VAL);
+        return ERROR;
+    }
     *val = *(matrix->values + row * matrix->cols + col);
     return 0;
 }

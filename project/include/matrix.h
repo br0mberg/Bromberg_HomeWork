@@ -29,8 +29,7 @@ typedef struct Matrix {
 } Matrix;
 
 // Assist operations
-int check_order_matrix(const Matrix* l, const Matrix* r);
-int checking_for_squariness(const Matrix* matrix);
+int create_minor(const Matrix* matrix, Matrix* transp_matrix, Matrix* temp_matrix, size_t  i, size_t j);
 
 // Init/release operations
 Matrix* create_matrix_from_file(const char* path_file);

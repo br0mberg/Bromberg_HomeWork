@@ -1,7 +1,8 @@
 #include "matrix.h"
 
 int det(const Matrix* matrix, double* val) {
-    if (checking_for_squariness(matrix)) {
+    if (matrix->rows != matrix->cols) {
+        fprintf(stderr, ERROR_SIZE_MATRIX);
         return ERROR;
     }
 
@@ -39,7 +40,8 @@ int det(const Matrix* matrix, double* val) {
 }
 
 Matrix* adj(const Matrix* matrix) {
-    if (checking_for_squariness(matrix)) {
+    if (matrix->rows != matrix->cols) {
+        fprintf(stderr, ERROR_SIZE_MATRIX);
         return NULL;
     }
 
@@ -72,24 +74,12 @@ Matrix* adj(const Matrix* matrix) {
     for (size_t i = 0; i < matrix->rows; ++i) {
         for (size_t j = 0; j < matrix->cols; ++j) {
             Matrix* temp_matrix = create_matrix(matrix->rows - 1, matrix->cols - 1);
-            for (size_t k = 0, k_next = 0; k < matrix->rows; ++k, ++k_next) {
-                if (k == i) {
-                    --k_next;
-                } else {
-                    for (size_t n = 0, n_next = 0; n < matrix->cols; ++n, ++n_next) {
-                        if (n != j) {
-                            double elem = 0;
-                            get_elem(transp_matrix, k, n, &elem);
-                            set_elem(temp_matrix, k_next, n_next, elem);
-                        } else {
-                            --n_next;
-                        }
-                    }
-                }
-            }
+            create_minor(matrix, transp_matrix, temp_matrix, i, j);
+
             double minor = 0;
             det(temp_matrix, &minor);
             minor*=pow(-1, (i + j) % 2);
+
             set_elem(adj_matrix, i, j, minor);
             free_matrix(temp_matrix);
         }

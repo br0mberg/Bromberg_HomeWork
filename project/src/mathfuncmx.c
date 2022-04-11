@@ -19,7 +19,6 @@ Matrix* mul_scalar(const Matrix* matrix, double val) {
             double elem = 0;
             get_elem(matrix, i, j, &elem);
             set_elem(result_matrix, i, j, elem * val);
-            // this 3 string in another func - transp copypast
         }
     }
     return result_matrix;
@@ -60,7 +59,7 @@ Matrix* sum(const Matrix* l, const Matrix* r) {
         return NULL;
     }
 
-    if (!check_order_matrix(l, r)) {
+    if (l->rows != r->rows || l->cols != r->cols) {
         fprintf(stderr, ERROR_SIZE_MATRIX);
         return NULL;
     }
@@ -94,7 +93,7 @@ Matrix* sub(const Matrix* l, const Matrix* r) {
         return NULL;
     }
 
-    if (!check_order_matrix(l, r)) {
+    if (l->rows != r->rows || l->cols != r->cols) {
         fprintf(stderr, ERROR_SIZE_MATRIX);
         return NULL;
     }
