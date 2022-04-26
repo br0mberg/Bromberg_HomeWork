@@ -1,56 +1,30 @@
 TARGET = ./main.out
-TST_TARGET = ./tests.out
 VALGRIND_LOG = "valgrind.log"
 
-# XXX: Don't forget backslash at the end of any line except the last one
-# Main
-HDRS = \
-	   project/include
-
 SRCS = \
-	   project/src/*.c 
+	   project/src/main.c \
+	   project/src/getstrfromfile.c \
+	   project/src/emlparse.c
 
-# Test
-TST_HDRS = \
-           project/include \
-		   project/tests/include
+.PHONY: all check build test memtest rebuild clean
 
-TST_SRCS = \
-           project/src/mathfuncmx.c \
-		   project/src/extrafuncmx.c \
-		   project/src/lifefuncmx.c \
-		   project/src/assistfuncmx.c \
-		   project/src/basedfuncmx.c \
-		   project/tests/src/*.c
-
-.PHONY: all check build test memtest testextra memtestextra rebuild clean
-
-all: clean check build test memtest testextra memtestextra
+all: clean check build test memtest
 
 check:
 	./run_linters.sh
 
 build: $(TARGET)
 
-test: $(TST_TARGET)
-	$(TST_TARGET)
+test: $(TARGET)
+	./btests/run.sh $(TARGET)
 
-memtest: $(TST_TARGET)
-	./project/tests/memtest.sh ${TST_TARGET}
-
-testextra: $(TST_TARGET)
-	$(TST_TARGET) --with-extra
-
-memtestextra: $(TST_TARGET)
-	./project/tests/memtest.sh ${TST_TARGET} --with-extra
+memtest: $(TARGET)
+	./btests/run.sh $(TARGET) --memcheck
 
 rebuild: clean build
 
 $(TARGET): $(SRCS)
-	$(CC) -Wall -Wextra -Werror $(addprefix -I,$(HDRS)) -o $(TARGET) $(CFLAGS) $(SRCS) -lm
-
-$(TST_TARGET): $(TST_SRCS)
-	$(CC) -Wall -Wextra -Werror $(addprefix -I,$(TST_HDRS)) -o $(TST_TARGET) $(CFLAGS) $(TST_SRCS) -lm
+	$(CC) -Wall -Wextra -Werror $(addprefix -I,$(HDRS)) -o $(TARGET) $(CFLAGS) $(SRCS)
 
 clean:
-	rm -f $(TARGET) $(TST_TARGET) ${VALGRIND_LOG}
+	rm -f $(TARGET) ${VALGRIND_LOG}
