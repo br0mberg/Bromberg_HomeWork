@@ -158,32 +158,97 @@ Matrix Matrix::transp() const {
 
 double Matrix::det() const {
     double val = 0;
-    if (rows == 1) {
-        val = values.at(0);
+    if (this->rows == 1) {
+        val = this->values.at(0);
         return val;
     }
 
-    if (rows == 2) {
-        val += values.at(0) * values.at(3) - values.at(2) * values.at(1);
-        return 0;
+    if (this->rows == 2) {
+        val += this->values.at(0) * this->values.at(3) - this->values.at(2) * this->values.at(1);
+        return val;
     }
 
     for (size_t i = 0; i < cols; ++i) {
         double ratio = (double) i;
-        Matrix matrix_norder(rows - 1, cols - 1);
-        for (size_t j = 1, next_j = 0; j < rows; ++j, ++next_j) {
-            for (size_t k = 0, next_k = 0; k < cols; ++k, ++next_k) {
+        Matrix matrix_norder(this->rows - 1, this->cols - 1);
+        for (size_t j = 1, next_j = 0; j < this->rows; ++j, ++next_j) {
+            for (size_t k = 0, next_k = 0; k < this->cols; ++k, ++next_k) {
                 if (k != i) {
-                    matrix_norder(next_j, next_k) = values.at(j * cols + k);
+                    matrix_norder(next_j, next_k) = this->values.at(j * this->cols + k);
                 } else {
                     --next_k;
                 }
             }
         }
         double res = 0;
-        res = det(matrix_norder);
+        res = matrix_norder.det();
         val += pow(-1, ratio) * values.at(i) * res;
     }
     return val;
+}
+
+Matrix Matrix::adj() const {
+    double deter = 0;
+    deter = det();
+
+    if (!deter) {
+        fprintf(stderr, "ERROR_DETERMINANT");
+        throw false;
+    }
+
+    Matrix adj_matrix(rows, cols);
+
+    if (rows == 1) {
+        adj_matrix(rows - 1, cols - 1) = 1;
+        return adj_matrix;
+    }
+
+    Matrix transp_matrix = transp();
+
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j < cols; ++j) {
+            Matrix temp_matrix(rows - 1, cols - 1);
+            for (size_t k = 0, k_next = 0; k < rows; ++k, ++k_next) {
+                if (k == i) {
+                    --k_next;
+                } else {
+                    for (size_t n = 0, n_next = 0; n < cols; ++n, ++n_next) {
+                        if (n != j) {
+                            temp_matrix(k_next, n_next) = transp_matrix(k, n);
+                        } else {
+                            --n_next;
+                        }
+                    }
+                }
+            }
+            double minor = 0;
+            minor = temp_matrix.det();
+            minor*=pow(-1, (i + j) % 2);
+
+            adj_matrix(i, j) = minor;
+        }
+    }
+    return adj_matrix;
+}
+
+Matrix Matrix::inv() const {
+    double determinant = 0;
+    determinant = det();
+    if (!determinant) {
+        fprintf(stderr, "ERROR_DETERMINANT");
+        throw false;
+    }
+
+    Matrix inv_matrix = adj();
+
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j < cols; ++j) {
+            double temp = 0;
+            temp = inv_matrix(i, j);
+            temp *= 1/determinant;
+            inv_matrix(i, j) = temp;
+        }
+    }
+    return inv_matrix;
 }
 }  // namespace prep

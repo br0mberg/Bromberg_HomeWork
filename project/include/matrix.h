@@ -40,7 +40,7 @@ class Matrix {
   std::ostream& operator<<(std::ostream& os, const Matrix& matrix);
 
   Matrix transp() const;
-  double det(Matrix& matrix = Matrix& matrix()) const;
+  double det() const;
   Matrix adj() const;
   Matrix inv() const;
 };
