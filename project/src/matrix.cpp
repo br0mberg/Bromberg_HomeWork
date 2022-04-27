@@ -2,20 +2,27 @@
 #include "exceptions.h"
 
 namespace prep {
-Matrix::Matrix(size_t rows, size_t cols) {
-    this->rows = rows;
-    this->cols = cols;
-    values.reserve(rows*cols);
+Matrix::Matrix(size_t rows, size_t cols): rows(rows), cols(cols), values(std::vector<double>(rows*cols)) {
+    for (size_t i = 0; i < rows; ++i) {
+        for (size_t j = 0; j <cols; ++j) {
+            values[i * cols + j] = 0;
+        }
+    }
 }
 
 Matrix::Matrix(std::istream& is) {
     is >> rows;
     is >> cols;
-    double val = 0;
+    values = std::vector<double>(rows * cols);
+    if (!is) {
+        throw InvalidMatrixStream();
+    }
     for (size_t i = 0; i < rows; ++i) {
         for (size_t j = 0; j < cols; ++j) {
-            is >> val;
-            values.push_back(val);
+            is >> values[i * cols + j];
+            if (!is) {
+                throw InvalidMatrixStream();
+            }
         }
     }
 }
@@ -29,55 +36,44 @@ size_t Matrix::getCols() const {
 }
 
 double Matrix::operator()(size_t i, size_t j) const {
+    if (i >= rows || j >= cols) {
+        throw OutOfRange(i, j, *this);
+    }
     return values[i * cols + j];
 }
 
 double& Matrix::operator()(size_t i, size_t j) {
+    if (i >= rows || j >= cols) {
+        throw OutOfRange(i, j, *this);
+    }
     return values[i * cols + j];
 }
 
 bool Matrix::operator==(const Matrix& rhs) const {
-    bool res = true;
-    if (cols != rhs.getCols() || rows != rhs.getRows()) {
-        return false;
-    }
-
     for (size_t i = 0; i < rows; ++i) {
         for (size_t j = 0; j < cols; ++j) {
-            if (values.at(i*cols + j) != rhs(i, j)) {
-                res = false;
+            if (std::abs(values[i*cols + j] - rhs(i, j)) > std::numeric_limits<double>::epsilon()) {
+                return false;
             }
         }
     }
-    return res;
+    return true;
 }
 
 bool Matrix::operator!=(const Matrix& rhs) const {
-    bool res = true;
-    if (cols != rhs.getCols() || rows != rhs.getRows()) {
-        throw false;
-    }
-
-    for (size_t i = 0; i < rows; ++i) {
-        for (size_t j = 0; j < cols; ++j) {
-            if (values.at(i*cols + j) == rhs(i, j)) {
-                res = false;
-            }
-        }
-    }
-    return res;
+    return !(*this == rhs);
 }
 
 Matrix Matrix::operator+(const Matrix& rhs) const {
     if (cols != rhs.getCols() || rows != rhs.getRows()) {
-        throw false;
+        throw DimensionMismatch(rhs);
     }
 
-    Matrix new_matrix(rows, cols);
+    Matrix new_matrix = Matrix(rows, cols);
 
     for (size_t i = 0; i < new_matrix.getRows(); ++i) {
         for (size_t j = 0; j < new_matrix.getCols(); ++j) {
-            new_matrix(i, j) = values.at(i * cols + j) + rhs(i, j);
+            new_matrix(i, j) = values[i * cols + j] + rhs(i, j);
         }
     }
     return new_matrix;
@@ -85,14 +81,14 @@ Matrix Matrix::operator+(const Matrix& rhs) const {
 
 Matrix Matrix::operator-(const Matrix& rhs) const {
     if (cols != rhs.getCols() || rows != rhs.getRows()) {
-        throw false;
+        throw DimensionMismatch(rhs);
     }
 
-    Matrix new_matrix(rows, cols);
+    Matrix new_matrix = Matrix(rows, cols);
 
     for (size_t i = 0; i < new_matrix.getRows(); ++i) {
         for (size_t j = 0; j < new_matrix.getCols(); ++j) {
-            new_matrix(i, j) = values.at(i * cols + j) - rhs(i, j);
+            new_matrix(i, j) = values[i * cols + j] - rhs(i, j);
         }
     }
     return new_matrix;
@@ -102,7 +98,7 @@ Matrix Matrix::operator*(double val) const {
     Matrix new_matrix(rows, cols);
     for (size_t i = 0; i < rows; ++i) {
         for (size_t j = 0; j < cols; ++j) {
-            new_matrix(i, j) = values.at(i * cols + j) * val;
+            new_matrix(i, j) = values[i * cols + j] * val;
         }
     }
     return new_matrix;
@@ -111,7 +107,7 @@ Matrix Matrix::operator*(double val) const {
 Matrix operator*(double val, const Matrix& matrix) {
     size_t rows = matrix.getRows();
     size_t cols = matrix.getCols();
-    Matrix new_matrix(rows, cols);
+    Matrix new_matrix = Matrix(rows, cols);
     for (size_t i = 0; i < rows; ++i) {
         for (size_t j = 0; j < cols; ++j) {
             new_matrix(i, j) = matrix(i, j) * val;
@@ -121,36 +117,41 @@ Matrix operator*(double val, const Matrix& matrix) {
 }
 
 std::ostream& operator<<(std::ostream& os, const Matrix& matrix) {
+    os << std::setprecision(std::numeric_limits<double>::max_digits10);
+    os << matrix.getRows() << " " << matrix.getCols() << std::endl;
     size_t rows = matrix.getRows();
     size_t cols = matrix.getCols();
     for (size_t i = 0; i < rows; ++i) {
         for (size_t j = 0; j < cols; ++j) {
             os << matrix(i, j) << " ";
         }
+        os << std::endl;
     }
     return os;
 }
 
 Matrix Matrix::operator*(const Matrix& rhs) const {
-    if (cols != rhs.getCols() || rows != rhs.getRows()) {
-        throw false;
+    if (cols != rhs.getRows()) {
+        throw DimensionMismatch(rhs);
     }
-    size_t cols = rhs.getCols();
-    Matrix new_matrix(rows, cols);
+
+    Matrix new_matrix = Matrix(rows, rhs.getCols());
     for (size_t i = 0; i < rows; ++i) {
-        for (size_t j = 0; j < cols; ++j) {
-            new_matrix(i, j) = rhs(i, j) * values.at(i * cols + j);
+        for (size_t j = 0; j < rhs.getCols(); ++j) {
+            for (size_t k = 0; k < cols; ++k) {
+                new_matrix(i, j) += rhs(k, j) * (*this)(i, k);
+            }
         }
     }
     return new_matrix;
 }
 
 Matrix Matrix::transp() const {
-    Matrix transp_matrix(cols, rows);
+    Matrix transp_matrix = Matrix(cols, rows);
 
-    for (size_t i = 0; i < rows; ++i) {
-        for (size_t j = 0; j < cols; ++j) {
-            transp_matrix(i, j) = values.at(i * cols + rows);
+    for (size_t i = 0; i < transp_matrix.getRows(); ++i) {
+        for (size_t j = 0; j < transp_matrix.getCols(); ++j) {
+            transp_matrix(i, j) = values[j * transp_matrix.getRows() + i];
         }
     }
     return transp_matrix;
@@ -249,6 +250,7 @@ Matrix Matrix::inv() const {
             inv_matrix(i, j) = temp;
         }
     }
+    throw SingularMatrix();
     return inv_matrix;
 }
 }  // namespace prep
