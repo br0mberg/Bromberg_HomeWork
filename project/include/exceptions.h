@@ -1,4 +1,5 @@
-#pragma once // NOLINT
+#ifndef PROJECT_INCLUDE_EXCEPTIONS_H_
+#define PROJECT_INCLUDE_EXCEPTIONS_H_
 
 #include <exception>
 #include <string>
@@ -54,3 +55,5 @@ class SingularMatrix: public MatrixException {
       : MatrixException("Singular matrix") {}
 };
 }  // namespace prep
+
+#endif  // PROJECT_INCLUDE_EXCEPTIONS_H_
