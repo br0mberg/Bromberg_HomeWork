@@ -24,10 +24,7 @@ Matrix& Matrix::operator=(const Matrix& rhs) {
         return (*this);
     }
 
-    if (rows > 0 || cols > 0) {
-        delete [] values;
-    }
-
+    delete [] values;
     rows = rhs.rows;
     cols = rhs.cols;
 
@@ -44,12 +41,14 @@ Matrix::Matrix(std::istream& is) {
     is >> cols;
     values = new double[rows * cols];
     if (!is) {
+        delete [] values;
         throw InvalidMatrixStream();
     }
     for (size_t i = 0; i < rows; ++i) {
         for (size_t j = 0; j < cols; ++j) {
             is >> values[i * cols + j];
             if (!is) {
+                delete [] values;
                 throw InvalidMatrixStream();
             }
         }
