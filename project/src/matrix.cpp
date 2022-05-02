@@ -2,18 +2,47 @@
 #include "exceptions.h"
 
 namespace prep {
-Matrix::Matrix(size_t rows, size_t cols): rows(rows), cols(cols), values(std::vector<double>(rows*cols)) {
+Matrix::Matrix(size_t rows, size_t cols): rows(rows), cols(cols) {
+    values = new double[rows * cols];
     for (size_t i = 0; i < rows; ++i) {
-        for (size_t j = 0; j <cols; ++j) {
+        for (size_t j = 0; j < cols; ++j) {
             values[i * cols + j] = 0;
         }
     }
 }
 
+Matrix::Matrix(const Matrix& rhs): rows(rhs.rows), cols(rhs.cols)  {
+    values = new double[rows * cols];
+
+    for (size_t i = 0; i < rows * cols; i++) {
+        values[i] = rhs.values[i];
+    }
+}
+
+Matrix& Matrix::operator=(const Matrix& rhs) {
+    if (this == &rhs) {
+        return (*this);
+    }
+
+    if (rows > 0 || cols > 0) {
+        delete [] values;
+    }
+
+    rows = rhs.rows;
+    cols = rhs.cols;
+
+    values = new double[rows * cols];
+
+    for (size_t i = 0; i < rows * cols; i++) {
+        values[i] = rhs.values[i];
+    }
+    return *this;
+}
+
 Matrix::Matrix(std::istream& is) {
     is >> rows;
     is >> cols;
-    values = std::vector<double>(rows * cols);
+    values = new double[rows * cols];
     if (!is) {
         throw InvalidMatrixStream();
     }
@@ -28,11 +57,11 @@ Matrix::Matrix(std::istream& is) {
 }
 
 size_t Matrix::getRows() const {
-    return rows;
+    return (*this).rows;
 }
 
 size_t Matrix::getCols() const {
-    return cols;
+    return (*this).cols;
 }
 
 double Matrix::operator()(size_t i, size_t j) const {
@@ -185,21 +214,17 @@ double Matrix::det() const {
                 }
             }
         }
-        double res = 0;
-        res = matrix_norder.det();
-        val += pow(-1, ratio) * values[i] * res;
+        val += pow(-1, ratio) * values[i] * matrix_norder.det();
     }
     return val;
 }
 
 Matrix Matrix::adj() const {
-    double deter = 0;
-    deter = (*this).det();
     if (rows != cols) {
         throw DimensionMismatch((*this));
     }
 
-    if (!deter) {
+    if (!(*this).det()) {
         fprintf(stderr, "ERROR_DETERMINANT");
         throw false;
     }
@@ -238,8 +263,7 @@ Matrix Matrix::adj() const {
 }
 
 Matrix Matrix::inv() const {
-    double deter_matrix = (*this).det();
-    if (!deter_matrix) {
+    if (!(*this).det()) {
         throw SingularMatrix();
     }
 
@@ -260,5 +284,9 @@ Matrix Matrix::inv() const {
     }
     Matrix res = adj_matrix.operator*(1. / determinate);
     return res;
+}
+
+Matrix::~Matrix() {
+    delete [] values;
 }
 }  // namespace prep
