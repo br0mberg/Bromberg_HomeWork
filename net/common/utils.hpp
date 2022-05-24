@@ -13,6 +13,7 @@
 #include <tuple>
 #include <vector>
 #include <unistd.h>
+#include <cstddef>
 
 // #define DEBUG
 
@@ -64,6 +65,12 @@ struct NetworkMessage {
 template <typename MessageType>
 std::vector<std::byte> NetworkMessage<MessageType>::Serialize(const MessageType &message) {
     std::vector<std::byte> network_data;
+    network_data[0] = sizeof(message.type);
+    for (size_t i = 1; i < strlen(message.content) + 1; ++i) {
+        network_data[i] = sizeof(message.content[i]);
+    }
+    // network_data[0] = sizeof(message.type);
+    // пробежаться по строке и взять у каждого sizeof()
     // TODO - Implement me - нужно точно рассчитать количество байт и аккуратно скопировать их в массив
     return network_data;
 }
@@ -71,13 +78,22 @@ std::vector<std::byte> NetworkMessage<MessageType>::Serialize(const MessageType 
 template <typename MessageType>
 std::tuple<ErrorStatus, MessageType> NetworkMessage<MessageType>::Deserialize(const std::vector<std::byte> &network_bytes) {
     // TODO - Implement me
+    char* str = new char[network_bytes.size()];
+    size_t i = 0;
+    size_t type = network_bytes[0];
+    for (i = 1; i < network_bytes.size(); ++i) {
+        str[i] = network_bytes[i];
+    }
+    str[i + 1] = '\0';
+    std::string out_str = std::string(str);
     return std::make_tuple(ErrorStatus::kNoError, MessageType{
-        MessageType::Type::kUnknown,
-        std::string{}
+        MessageType::Type type,
+        std::string out_str;
     });
 }
 
 using NetworkRequest = NetworkMessage<Request>;
+
 using NetworkResponse = NetworkMessage<Response>;
 
 #ifdef DEBUG
@@ -142,9 +158,24 @@ enum class ReadStatus {
 
 inline ReadStatus ReadFromNetwork(int socket_fd, std::vector<std::byte> &network_bytes,
                            bool retry_if_no_data = true,
-                           const std::chrono::seconds &timeout = std::chrono::seconds(0),
+                           const std::chrono::seconds &timeout = std::chrono::seconds(5),
                            const std::chrono::milliseconds &retry_time_interval = std::chrono::milliseconds(100)) {
-
+    // unsigned int time_inteval = retry_time_interval.count();
+    while (socket_fd == NULL && timeout > std::chrono::seconds(0) && retry_if_no_data == true) {
+        sleep(retry_time_interval.count());
+        if (timeout <= std::chrono::seconds(0)) {
+            retry_if_no_data == false;
+        }
+    }
+    if (socket_fd != NULL) {
+        read(socket_fd, &network_bytes, sizeof(socket_fd));
+        if (network_bytes.size() == 0) {
+            return ReadStatus::kFailed;
+        }
+    } else {
+        return ReadStatus::kNoData;
+    }
+    // ДЛЯ EXTRA SECONDS НАДО ПОМЕНЯТЬ = АСИНХРОН, не ждать данные вечность а с периодичностью
     // TODO - нужно считать данные из сокета в network_bytes
     // если данных нет - вернуть ReadStatus::kNoData (если не стоит retry_if_no_data и не вышел таймаут)
     // если произошла ошибка - вернуть ReadStatus::kFailed
@@ -152,6 +183,9 @@ inline ReadStatus ReadFromNetwork(int socket_fd, std::vector<std::byte> &network
 }
 
 inline ErrorStatus SendToNetwork(int socket_fd, const std::vector<std::byte> &message_data) {
+    if(write(socket_fd, &message_data, sizeof(socket_fd)) == -1) {
+        return ErrorStatus::kError;
+    }
     // TODO - нужно отправить массив байт через сокет
     // если произошла ошибка - вернуть
     return ErrorStatus::kNoError;
@@ -163,6 +197,11 @@ enum FileDescriptorOptions : int {
 };
 
 inline ErrorStatus ConfigureFileDescriptor(int fd, FileDescriptorOptions options = kFileDescriptor_NoOptions) {
+    int status = fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | options);
+    if (status == -1){
+        return ErrorStatus::kError;
+    }
+    // FileDescriptorOptions options = kFileDescriptor_NoOptions - > 
     // TODO - Сконфигурируйте дескриптор через fcntl - например, чтобы сделать чтение неблокирующим
     return ErrorStatus::kNoError;
 }
@@ -207,13 +246,29 @@ struct NamedPipe {
 inline std::tuple<ErrorStatus, int> NamedPipe::GetReader(
         const std::filesystem::path &pipe_path,
         FileDescriptorOptions options) {
+    int fifo = mkfifo(pipe_path.c_str(), S_IRUSR);
+    if (fifo) {
+        return std::make_tuple(ErrorStatus::kError, NULL);
+    }
+    int fd = open(reinterpret_cast<const char*>(fifo), options);
+    if (fd < 0) {   
+        return std::make_tuple(ErrorStatus::kError, NULL);
+    }
     // TODO - нужно вернуть дескриптор для чтения (сконфигурированного с опциями) из именованного канала
     return std::make_tuple(ErrorStatus::kNoError, fd);
 }
 
 inline std::tuple<ErrorStatus, int> NamedPipe::GetWriter(
         const std::filesystem::path &pipe_path) {
-    // TODO - нужно вернуть дескриптор для записи из именованного канала
+    int fifo = mkfifo(pipe_path.c_str(), S_IWUSR);
+    if (fifo) {
+        return std::make_tuple(ErrorStatus::kError, NULL);
+    }
+    int fd = open(reinterpret_cast<const char*>(fifo), 0);
+    if (fd < 0) {
+        return std::make_tuple(ErrorStatus::kError, NULL);
+    }
+    // !TODO - нужно вернуть дескриптор для записи из именованного канала
     return std::make_tuple(ErrorStatus::kNoError, fd);
 }
 
@@ -232,16 +287,26 @@ inline std::tuple<ErrorStatus, int> NamedPipe::GetWriter() const {
 }
 
 inline std::tuple<ErrorStatus, NamedPipe> NamedPipe::Create(const std::filesystem::path &pipe_path) {
-    // TODO - нужно создать именованный pipe
+    // !TODO - нужно создать именованный pipe
+    NamedPipe pip(pipe_path);
+    return std::make_tuple(ErrorStatus::kNoError, pip);
 }
 
 template <typename ObjectType>
 ErrorStatus WriteToFileDescriptor(int fd, const ObjectType &object) {
+    ssize_t sucss_byt = write(fd, &object, object.size());
+    if (sucss_byt == -1 || sucss_byt != object.size()) {
+        return ErrorStatus::kError;
+    }
     // TODO - запись цельного объекта (полезного набора байт) произвольного типа в дескриптор
     return ErrorStatus::kNoError;
 }
 
 inline ErrorStatus WriteToFileDescriptor(int fd, const std::vector<std::byte> &bytes) {
+    ssize_t sucss_byt = write(fd, &bytes, bytes.size());
+    if (sucss_byt == -1 || sucss_byt != bytes.size()) {
+        return ErrorStatus::kError;
+    }
     // TODO - запись массива байт в дескриптор
     return ErrorStatus::kNoError;
 }
@@ -249,9 +314,23 @@ inline ErrorStatus WriteToFileDescriptor(int fd, const std::vector<std::byte> &b
 template <typename ObjectType>
 ErrorStatus NamedPipe::Write(const ObjectType &object) const {
     // TODO - запись в инициализированный Named Pipe
+    int fifo = mkfifo((this*)pipe_path.c_str(), S_IWUSR);
+    if (fifo) {
+        return std::make_tuple(ErrorStatus::kError, NULL);
+    }
+    int fd = open(reinterpret_cast<const char*>(fifo), 0);
+    if (fd < 0) {
+        return std::make_tuple(ErrorStatus::kError, NULL);
+    }
+    ssize_t sucss_wr = write(fd, &object, object.size());
+    if (sucss_wr == -1) {
+        return ErrorStatus::kError;
+    }
+    return ErrorStatus::kNoError;
 }
 
 inline void NamedPipe::Remove() {
+    pipe_path_ = NULL;
     // TODO - удаление Named Pipe
 }
 
@@ -316,6 +395,20 @@ ReadStatus ReadFromFileDescriptor(
         const std::chrono::milliseconds &retry_time_interval = std::chrono::milliseconds(100)) {
     // TODO - похоже на ReadFromNetwork, только для файлового дескриптора
     // read_object - цельный объект, который можно создать без параметров и заполнить единой операцией чтения
+    const std::chrono::seconds &timeout = std::chrono::seconds(1);
+    while (fd == NULL && timeout > std::chrono::seconds(0) && retry_if_no_data == true) {
+        sleep(retry_time_interval.count());
+        if (timeout <= std::chrono::seconds(0)) {
+            retry_if_no_data == false;
+        }
+    }
+    if (fd != NULL) {
+        if (read(fd, &read_object, sizeof(fd))) {
+            return ReadStatus::kFailed;
+        }
+    } else {
+        return ReadStatus::kNoData;
+    }
 }
 
 template <>
@@ -324,6 +417,20 @@ inline ReadStatus ReadFromFileDescriptor<std::vector<std::byte>>(
         std::vector<std::byte> &bytes_to_read,
         bool retry_if_no_data,
         const std::chrono::milliseconds &retry_time_interval) {
+    const std::chrono::seconds &timeout = std::chrono::seconds(1);
+    while (fd == NULL && timeout > std::chrono::seconds(0) && retry_if_no_data == true) {
+        sleep(retry_time_interval.count());
+        if (timeout <= std::chrono::seconds(0)) {
+            retry_if_no_data == false;
+        }
+    }
+    if (fd != NULL) {
+        if (read(fd, &bytes_to_read, sizeof(fd))) {
+            return ReadStatus::kFailed;
+        }
+    } else {
+        return ReadStatus::kNoData;
+    }
     // TODO - частный случай ReadFromFileDescriptor, когда объект не простой, а представляет из себя vector<std::byte>
 }
 
@@ -333,6 +440,31 @@ ReadStatus NamedPipe::Read(
         FileDescriptorOptions options,
         bool retry_if_no_data,
         const std::chrono::milliseconds &retry_time_interval) const {
+    const std::chrono::seconds &timeout = std::chrono::seconds(1);
+    int fifo = mkfifo((this*)pipe_path.c_str(), /*S_IWUSR*/ options);
+    if (fifo) {
+        return ErrorStatus::kError;
+    }
+    int fd = open(reinterpret_cast<const char*>(fifo), options);
+    if (fd < 0) {
+        return ErrorStatus::kError;
+    }
+
+    while (fd == NULL && timeout > std::chrono::seconds(0) && retry_if_no_data == true) {
+        sleep(retry_time_interval.count());
+        if (timeout <= std::chrono::seconds(0)) {
+            retry_if_no_data == false;
+        }
+    }
+    if (fd != NULL) {
+        ssize_t sucss_wr = write(fd, &read_object, read_object.size());
+        if (sucss_wr == -1) {
+            return ErrorStatus::kError;
+        }
+    } else {
+        return ReadStatus::kNoData;
+    }
+    return ErrorStatus::kNoError;
     // TODO - чтение из именованного канала
 }
 
@@ -341,6 +473,33 @@ ReadStatus Pipe::Read(
         StructType &read_object,
         bool retry_if_no_data,
         const std::chrono::milliseconds &retry_time_interval) const {
+    const std::chrono::seconds &timeout = std::chrono::seconds(1);
+
+    while (fd == NULL && timeout > std::chrono::seconds(0) && retry_if_no_data == true) {
+        sleep(retry_time_interval.count());
+        if (timeout <= std::chrono::seconds(0)) {
+            retry_if_no_data == false;
+        }
+    }
+    if (fd != NULL) {
+        ssize_t sucss_r = 0;
+        bool run = 1;
+        while (run) {
+        if (sucss_r < read_fd_.size()) {
+            ssize_t r += read(read_fd_, &read_object, read_fd_.size());
+            if (r == 0) {
+                run = 0;
+            }
+            sucss_r += r;
+        }
+        }
+        if (sucss_r == -1 || sucss_r != read_fd_.size()) {
+            return ErrorStatus::kError;
+        }
+    } else {
+        return ReadStatus::kNoData;
+    }
+    return ErrorStatus::kNoError;
     // TODO - чтение из неименованного канала (внимательно убедитесь на тестовых примерах, в чём разница неблокирующего чтения
     // из именованного и неименованного канала в зависимости от того, начато ли оно раньше, чем была запись, или если чтение
     // осуществляется меньшими "кусками", чем было записано, или если было несколько раз что-то записано, а потом за одну-несколько
@@ -349,11 +508,28 @@ ReadStatus Pipe::Read(
 }
 
 ErrorStatus Pipe::Close() {
+    close(read_fd_);
+    close(write_fd_);
+    read_options_ = kFileDescriptor_NoOptions;
     // TODO - все ресурсы нужно освобождать после работы с ними. Pipe (обёртка над int fd[2]) - не исключение
 }
-
+/*void func_pipe(int *a = 0, int *b = 0) {
+    int fd[2];
+    if( pipe(fd[2]) == -1) {
+        return ErrorStatus::kError;
+    }
+    a = fd[0];
+    b = fd[1];
+}*/
+// std::function<void()> = f;
 std::tuple<ErrorStatus, Pipe> Pipe::Create(FileDescriptorOptions read_options) {
+    int fd[2];
+    if (pipe(fd) == -1) {
+        return std::make_tuple(ErrorStatus::kError, NULL);
+    }
+    Pipe pip(fd[0], fd[1], read_options);
     // TODO - создайте удобную обёртку над int fd[2] и необходимостью явно вызывать pipe во внешнем коде
+    return std::make_tuple(ErrorStatus::kNoError, pip);
 }
 
 struct AutoClosingPipe : Pipe {
@@ -365,4 +541,3 @@ struct AutoClosingPipe : Pipe {
   private:
     Pipe pipe_obj_;
 };
-

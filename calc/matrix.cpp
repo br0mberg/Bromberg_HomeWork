@@ -7,7 +7,7 @@
 
 std::tuple<Matrix::ErrorStatus, std::string> Matrix::Process(std::string_view task, bool for_test) {
 #ifdef EXTRA
-#error "TODO: Implement me - implement real parse, making operation and serialization to string"
+#error "TODO: Implement me -  implement real parse, making operation and serialization to string"
 #else
     if (!for_test) {
         std::mt19937 generator{std::random_device{}()};

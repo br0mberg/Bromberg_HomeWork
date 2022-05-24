@@ -17,6 +17,9 @@ struct Worker::WorkerImpl {
 
   private:
     static void HandlerWorkerSignal(int sig_number) {
+        if (sig_number == SIGINT || sig_number == SIGTERM) {
+            worker_running_ = false;
+        }
         // TODO: а что же должен делать таск-воркер по SIGINT и иным сигналам?
     }
 
@@ -45,6 +48,9 @@ struct Worker::WorkerImpl {
 
 ErrorStatus Worker::WorkerImpl::CleanWorkingDirectory(std::string_view working_directory) {
     for (const auto &entry : std::filesystem::directory_iterator(working_directory)) {
+        if (!remove(entry)) {
+            return ErrorStatus::kError;
+        }
         // TODO: Удаляем все созданные файлы с задачами при окончании работы
     }
 
@@ -72,6 +78,14 @@ std::filesystem::path Worker::WorkerImpl::TaskPath(int task_id) {
 }
 
 ErrorStatus Worker::WorkerImpl::SendResponse(int client_pid, const Response &response) {
+    std::vector<std::byte> network_data = NetworkMessage<Response>::Serialize(response);
+    /*if (write(client_pid, &network_data, sizeof(network_data))){
+        return ErrorStatus::kError;
+    }*/
+    if (ErrorStatus::kError == SendToNetwork(client_pid, network_data)) {
+        return ErrorStatus::kError;
+    }
+    return ErrorStatus::kNoError;
     // TODO: Сериализуем результат (response) в массив байт и отправляем в NamedPipe to_net
 }
 
@@ -79,6 +93,9 @@ void Worker::WorkerImpl::RemoveTask(int task_id) {
 #ifdef DEBUG
     LOG_MESSAGE << "[WORKER pid=" << getpid() << "]" << "RemoveTask(" << task_id << ")\n";
 #endif
+    std::filesystem::path path_task = TaskPath(task_id);
+    remove(path_task);
+    // or remove(task_id)
     // TODO: удаляем файл с задачей
 }
 
@@ -86,10 +103,36 @@ std::tuple<ErrorStatus, std::string> Worker::WorkerImpl::LoadTask(int task_id) {
 #ifdef DEBUG
     LOG_MESSAGE << "[WORKER pid=" << getpid() << "]" << "LoadTask(" << task_id << ")\n";
 #endif
+    std::filesystem::path path_task = TaskPath(task_id);
+    std::ifstream ifs(path_task, std::ifstream::binary);
+
+    std::string s;
+    char * buffer;
+
+    ifs.seekg (0, std::ios::end);
+    int length = ifs.tellg();
+    ifs.seekg (0, std::ios::beg);
+
+    buffer = new char [length];
+    ifs.read(buffer, length);
+    s = (std::string) buffer;
+    delete [] buffer;
+    ifs.close();
+    return std::make_tuple(ErrorStatus::kNoError, s);
     // TODO: Читаем содержимое файла с задачей и бросаем ошибку, если случилась
 }
 
 ErrorStatus Worker::WorkerImpl::SaveTask(int task_id, std::string_view task_content) {
+    std::filesystem::path path_task = TaskPath(task_id);
+    std::ofstream ifs(path_task,std::ios::app);
+    if (!ifs.is_open()) {
+        return ErrorStatus::kError;
+    }
+    std::string task_con_str(task_content.data(), task_content.size());
+    const char* ch_task_content = task_con_str.c_str();
+    ifs.write(ch_task_content, sizeof(ch_task_content));
+    ifs.close();
+    return ErrorStatus::kNoError;
     // TODO: Сохраняем задачу в файл TaskPath()
 }
 
@@ -98,57 +141,78 @@ ErrorStatus Worker::WorkerImpl::RunPostQueueUpdate(int client_pid, std::string_v
     // Запрашиваем уникальный id
     if (from_worker_pipe_.Write(UpdateQueueRequest{UpdateQueueRequest::Type::kCreate}) == ErrorStatus::kError) {
         // TODO: что делать при подобных ошибках?
+        Worker::WorkerImpl::CleanWorkingDirectory(working_directory_);
+        HandlerWorkerSignal(SIGINT);
     }
 
     // TODO: получаем ответ от планировщика с уникальным id
     UpdateQueueResponse response;
     auto read_status = to_worker_pipe_.Read(response);
-
+    if (read_status == ReadStatus::kFailed || read_status == ReadStatus::kNoData) {
+        return ErrorStatus::kError;
+    }
     // TODO: Сохраняем задачу в файл TaskPath()
     // (не забываем обрабатывать всевозможные ошибки)
-
+    auto error_status = SaveTask(response.id.for_task, task_content);
+    if (error_status == ErrorStatus::kError) {
+        SendResponse(client_pid, Response{ResponseType::kError});
+        RemoveTask(response.id.for_task);
+    }
     // TODO: Обновляем статус задачи на New, если сохранение в файл прошло успешно
     // Удаляем задачу - если ошибка
     // Отправляем net-воркеру результат
-    SendResponse(client_pid, Response{/*...*/});
-
+    auto error_status = SendResponse(client_pid, Response{ResponseType::kNew});
+    if (error_status == ErrorStatus::kError) {
+        return ErrorStatus::kError;
+    }
+    return ErrorStatus::kNoError;
     // TODO: что возвращаем?
 }
 
 // TODO: обработка GET-запроса пользователя
 ErrorStatus Worker::WorkerImpl::RunGetQueueUpdate(int client_pid, int task_id) {
     // TODO: Запрашиваем статус задачи по id у планировщика
-    // Отправляем ответ в зависимости от полученного статуса
+    UpdateQueueResponse responce(task_id);
+    auto task_status = responce.task_status;
 
+    // Отправляем ответ в зависимости от полученного статуса
     switch (task_status) {
       case WorkerTask::Status::kNew:
       case WorkerTask::Status::kWork: {
         return SendResponse(client_pid, Response{
+            ResponseType::kWork
             // TODO: Implement me
         });
       }
       case WorkerTask::Status::kDone: {
         // TODO: в Done и Error не забываем удалять файлы с диска и очереди!
+        RemoveTask(task_id); // с диска
+        UpdateQueueRequest(UpdateQueueRequest::Type::kDelete, task_id); // с очереди?
+        auto error_status = ErrorStatus::kNoError;
         if (error_status == ErrorStatus::kError) {
             SendResponse(client_pid, Response{
+                ResponseType::kError
                 // TODO: Implement me
             });
             return ErrorStatus::kError;
         }
 
         return SendResponse(client_pid, Response{
+            ResponseType::kDone
             // TODO: Implement me
         });
       }
       case WorkerTask::Status::kError: {
         RemoveTask(task_id);
         return SendResponse(client_pid, Response{
+            ResponseType::kError
             // TODO: Implement me
         });
       }
       case WorkerTask::Status::kUnknown:
       default: {
         return SendResponse(client_pid, Response{
+            ResponseType::kUnknown
             // TODO: Implement me
         });
       }

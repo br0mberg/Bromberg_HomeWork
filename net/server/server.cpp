@@ -29,10 +29,16 @@ struct Server::ServerImpl {
 
   private:
     static void HandleServerInterrupt(int sig_number) {
+        if (sig_number == SIGINT || sig_number == SIGTERM) {
+           server_running_ = false;
+        }
         // TODO: Как сервер должен реагировать на сигналы?
     }
 
     static void HandleNetClientInterrupt(int sig_number) {
+        if (sig_number == SIGINT || sig_number == SIGCHLD) {//SIGCHLD
+           net_client_running_ = false;
+        }
         // TODO: Как net-воркер должен реагировать на сигналы?
     }
 
@@ -55,18 +61,25 @@ ErrorStatus Server::ServerImpl::RunNetProcess(AutoClosingFileDescriptor client_f
     // TODO: Основная функция net-воркера
 
     // TODO: регистрация сигналов
-
+    std::signal(SIGINT, HandleServerInterrupt);
+    std::signal(SIGTERM, &HandleServerInterrupt);
+    std::signal(SIGCHLD, HandleNetClientInterrupt);
     // TODO: считывание данных из сети (возможно, неблокирующее, с проверкой отсутствия изменения состояния процесса из-за какого-нибудь SIGINT)
     // Read -> network_bytes, error_status
-
+    std::vector<std::byte> network_bytes;
+    if (read(client_fd, &network_bytes, sizeof(client_fd)) == -1) {
+        return ErrorStatus::kError;
+    }
     // TODO: считывание "флажка" из synchro-pipe, что говорит о создании основным процессом named-pipe (возможно, в неблокирующем режиме)
     bool named_pipe_created = false;
-    read_error_status = synchro_pipe.Read(named_pipe_created, false);
-
-    auto from_net_pipe = NamedPipe{ // AutoClosable? Поэкспериментируйте в разных местах с ними, чтобы не терять Close...
-        NamedPipe::GetPerProcessPipeName(working_directory_, kFromNetPipeTag)};
+    auto read_error_status = synchro_pipe.Read(named_pipe_created, true);
+    if (read_error_status == ReadStatus::kNoData || read_error_status == ReadStatus::kFailed) {
+        return ErrorStatus::kError;
+    }
+    auto from_net_pipe = NamedPipe{NamedPipe::GetPerProcessPipeName(working_directory_, kFromNetPipeTag)};
+    // !AutoClosable? Поэкспериментируйте в разных местах с ними, чтобы не терять Close...
     // TODO: пишем полученные из сети данные в named_pipe from_net
-    if (closing_from_net_pipe.Write(network_bytes) == ErrorStatus::kError) {
+    if (from_net_pipe.Write(&network_bytes) == ErrorStatus::kError) {
 #ifdef DEBUG
     LOG_ERROR << "[NET WORKER pid=" << getpid() << "]" << "Sending client request to named pipe failed...\n";
 #endif
@@ -75,19 +88,20 @@ ErrorStatus Server::ServerImpl::RunNetProcess(AutoClosingFileDescriptor client_f
 
     // TODO: читаем ответ из named_pipe to_net
     // в неблокирующем режиме, проверяя состояние процесса, например, как-то так:
-    /*std::vector<std::byte> serialized_response;
+    std::vector<std::byte> serialized_response;
 
     read_error_status = ReadStatus::kNoData;
     do {
-        read_error_status = closing_to_net_pipe.Read(serialized_response, kFileDescriptor_NonBlocking, false);
+        read_error_status = from_net_pipe.Read(serialized_response, kFileDescriptor_NonBlocking, true);
 
         if (read_error_status == ReadStatus::kNoData) {
-            // TODO: ждём...
+            sleep(5);  // ?
         }
-    } while (net_client_running_ && read_error_status == ReadStatus::kNoData);*/
-
+    } while (net_client_running_ && read_error_status == ReadStatus::kNoData);
     // TODO: после таких циклов имеет смысл проверить причину выхода
-
+    if (net_client_running_ == false) {
+        signal(SIGINT, HandleServerInterrupt);
+    }
 #ifdef DEBUG
     LOG_MESSAGE << "Received client response from named pipe - ";
     std::transform(std::begin(serialized_response), std::end(serialized_response), std::ostream_iterator<int>(LOGGER, " "),
@@ -119,16 +133,39 @@ ErrorStatus Server::ServerImpl::Start() {
 
     // TODO (добавить проверки)
     auto [error_status, pipe_to_planner] = Pipe::Create(kFileDescriptor_NonBlocking);
+    if (error_status == ErrorStatus::kError) {
+        return ErrorStatus::kError;
+    }
     auto planner_pid = fork();
 
     if (planner_pid == 0) {
         // создаём Planner
         auto planner_status = Planner{pipe_to_planner.ReaderFd(), max_workers_count_, working_directory_}.Start();
+        if (planner_status == ErrorStatus::kError) {
+            return ErrorStatus::kError;
+        }
         // TODO: что делаем дальше с Planner?
     }
-
+    int domain = AF_UNIX;
+    int type = SOCK_STREAM;
+    int socket_fd = socket(domain, type, 0);
+    if (socket_fd < 0) {
+        return ErrorStatus::kError;
+    }
+    sockaddr_in addr;
+    int addrl = sizeof(addr);
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_port = htons(port_);
+    addr.sin_family = AF_UNIX;
+    int result = bind(socket_fd, reinterpret_cast<sockaddr *>(&addr), addrl);
+    if (result == -1) {
+        return ErrorStatus::kError;
+    }
+    if (listen(socket_fd, SOMAXCONN) == -1) {
+        return ErrorStatus::kError;
+    }
     // TODO: создаём сокет на порту и настраиваем его
-    int socket_fd = ...;
+    // int socket_fd = ...;
 
     // TODO: не забываем про регистрацию обработчиков сигналов
 
@@ -159,7 +196,10 @@ ErrorStatus Server::ServerImpl::Start() {
 
 
         // TODO: создаём synchro-pipe
-        synchro_net_pipe = Pipe::Create(/*...*/);
+        auto [error_status, synchro_net_pipe] = Pipe::Create(kFileDescriptor_NonBlocking);
+        if (error_status == ErrorStatus::kError) {
+            return ErrorStatus::kError;
+        }
 
         auto net_worker_pid = fork();
         if (net_worker_pid < 0) {
@@ -176,6 +216,12 @@ ErrorStatus Server::ServerImpl::Start() {
         if (net_worker_pid == 0) {
             // TODO: запускаем net-воркера
             auto net_process_exit_status = RunNetProcess(client_fd, synchro_net_pipe);
+            if (net_process_exit_status == ErrorStatus::kError) {
+                close(client_fd);
+
+                server_running_ = false;
+                return_status = ErrorStatus::kError;
+            }
 #ifdef DEBUG
             LOG_MESSAGE << "Stopping net worker " << getpid() << "...\n";
 #endif
@@ -191,24 +237,38 @@ ErrorStatus Server::ServerImpl::Start() {
 
         auto [from_net_error, from_net_pipe] = NamedPipe::Create(
             NamedPipe::GetPerProcessPipeName(working_directory_, kFromNetPipeTag, net_worker_pid));
+        if (from_net_error == ErrorStatus::kError) {
+            close(client_fd);
 
+            server_running_ = false;
+            return_status = ErrorStatus::kError;
+        }
         auto [to_net_error, to_net_pipe] = NamedPipe::Create(
             NamedPipe::GetPerProcessPipeName(working_directory_, kToNetPipeTag, net_worker_pid));
+        if (to_net_error == ErrorStatus::kError) {
+            close(client_fd);
 
-
+            server_running_ = false;
+            return_status = ErrorStatus::kError;
+        }
         // TODO: передаём планировщику pid net-воркера через созданный ранее pipe
-
+        from_net_pipe.Write(/*getpid()*/);
         // TODO: уведомляем через synchro-pipe net-воркера, что named-pipe-создан
-        synchro_net_pipe.Write(/*net_worker_configured*/)
+        synchro_net_pipe.Write();  // ?
 
         // TODO: сохраняем информацию о воркере, чтобы в конце не забыть его убить
         net_workers_.emplace_back(net_worker_pid);
     }
-
+    kill(planner_pid, SIGINT);
+    for (auto i = 0; i < net_workers_.size(); ++i) {
+        if (kill(net_workers_[i], SIGINT)) {
+            return ErrorStatus::kError;
+        }
+    }
     // TODO: после SIGINT должны оказаться тут и корректно завершить работу планировщика и net-воркеров
     // например, можно всех "убить" и "подождать" в неблокирующем режиме
     // если какой-то из воркеров вернул ошибку - этот тоже должен вернуть ошибку
-
+    
     return return_status;
 }
 

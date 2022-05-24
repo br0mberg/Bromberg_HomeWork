@@ -37,14 +37,29 @@ Client::~Client() {
 }
 
 ErrorStatus Client::ConnectTo(const EndPoint &end_point) {
-    // TODO - создать сокет и подключиться к серверу, вернуть ошибку, если не получилось
+    int domain = AF_UNIX;
+    int type = SOCK_STREAM;
+    int s = socket(domain, type, 0);
+    if (s < 0) {
+        return ErrorStatus::kError;
+    }
+    sockaddr_in addr;
+    addr.sin_addr.s_addr = inet_addr((end_point.host).data());
+    // коннект к серверу
+    addr.sin_family = AF_UNIX;
+    addr.sin_port = htons(end_point.port);  // порт
+
+    if (connect(s, reinterpret_cast<sockaddr *>(&addr), sizeof(addr))) {
+        std::cout << "Server connection failed with error: " << std::endl;
+        return ErrorStatus::kError;
+    }
     impl_->connected = true;
     return ErrorStatus::kNoError;
 }
 
 #include <iostream>
 
- std::tuple<ErrorStatus, std::vector<std::byte>> Client::ClientImpl::SendNetworkRequest(const std::vector<std::byte> &request) {
+std::tuple<ErrorStatus, std::vector<std::byte>>Client::ClientImpl::SendNetworkRequest(const std::vector<std::byte> &request) {
     if (!connected) {
 #ifdef DEBUG
         LOG_ERROR << "No active connection\n";
