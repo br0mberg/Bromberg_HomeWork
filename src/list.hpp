@@ -1,9 +1,7 @@
 #pragma once // NOLINT
 #include <iterator>
 
-
 namespace task {
-
 
 template<class T>
 class list {
