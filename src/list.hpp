@@ -5,57 +5,166 @@ namespace task {
 
 template<class T>
 class list {
-
-public:
+     struct Node;
+ protected:
+     Node* node;
+ public:
     class iterator {
-    public:
+        friend class list;
+        friend class const_list;
+     public:
         using difference_type = ptrdiff_t;
         using value_type = T;
         using pointer = T*;
         using reference = T&;
         using iterator_category = std::bidirectional_iterator_tag;
 
-        iterator();
-        iterator(const iterator&);
-        iterator& operator=(const iterator&);
+        iterator(): node() {}
+        explicit iterator(const Node* other): node(other) {}
+        iterator(const iterator& it): node(it.node) {}
+        iterator& operator=(const iterator& it) {
+           node = it.node;
+        }
 
-        iterator& operator++();
-        iterator operator++(int);
-        reference operator*() const;
-        pointer operator->() const;
-        iterator& operator--();
-        iterator operator--(int);
+        iterator& operator++() {
+           node = node->next;
+           return *this;
+        }
 
-        bool operator==(iterator other) const;
-        bool operator!=(iterator other) const;
+        iterator operator++(int) {
+            self tmp = *this;
+	         node = node->next;
+	         return tmp;
+        }
 
-        // Your code goes here?..
+        reference operator*() const {
+           return *static_cast<Node*>(node)->item();
+        }
 
-    private:
-        // Your code hoes here...
+        pointer operator->() const {
+           return static_cast<Node*>(node)->item();
+        }
+
+        iterator& operator--() {
+            node = node->prev;
+	         return *this;
+        }
+
+        iterator operator--(int) {
+            self tmp = *this;
+	         node = node->prev;
+	         return tmp;
+        }
+
+        bool operator==(const iterator& other) const {
+            return (*this).node == other.node;
+        }
+
+        bool operator!=(const iterator& other) const {
+            return (*this).node != other.node;
+        }
+
+     private:
+         typedef iterator self;
+         Node* node;
     };
 
     class const_iterator {
-        // Your code goes here...
+     public:
+        using difference_type = ptrdiff_t;
+        using value_type = T;
+        using pointer = T*;
+        using reference = T&;
+        using iterator_category = std::bidirectional_iterator_tag;
+
+        const_iterator(): node() {}
+        explicit const_iterator(const Node* other): node(other) {}
+        const_iterator(const iterator& it): node(it.node) {}
+        const_iterator& operator++() {
+            node = node->next;
+	         return *this;
+        }
+        const_iterator operator++(int) {
+            self tmp = *this;
+	         node = node->next;
+	         return tmp;
+        }
+        reference operator*() const {
+           return *static_cast<Node*>(node)->item();
+        }
+        pointer operator->() const {
+           return static_cast<Node*>(node)->item();
+        }
+        const_iterator& operator--() {
+            node = node->prev;
+	         return *this;
+        }
+        const_iterator operator--(int) {
+            self tmp = *this;
+	         node = node->prev;
+	         return tmp;
+        }
+
+        bool operator==(const const_iterator& other) const {
+            return (*this).node == other.node;
+        }
+        bool operator!=(const const_iterator& other) const {
+           return (*this).node != other.node;
+        }
+
+     private:
+         typedef const_iterator self;
+         Node*	node;
+         typedef iterator iterator;
     };
 
-    using reverse_iterator = std::reverse_iterator<iterator>;
-    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+    typedef std::reverse_iterator<iterator> reverse_iterator;
 
-
-    list();
-    list(size_t count, const T& value);
-    explicit list(size_t count);
-    ~list();
+    list() = default;
+    list(size_t count, const T& value) {
+       // TODO
+    }
+    explicit list(size_t count) {
+       // TODO
+    }
+    ~list() = default;
 
     list(const list& other);
-    list& operator=(const list& other);
+    list& operator=(const list& other) {
+         this->assign(other.begin(), other.end());
+	      return *this;
+    }
 
-    T& front();
-    const T& front() const;
+    void fill_assign(size_t count, const T& value) {
+      iterator i = begin();
+      for (; i != end() && count > 0; ++i, --count)
+        *i = value;
+      if (count > 0)
+        insert(end(), count, value);
+      else
+        // TODO
+    }
 
-    T& back();
-    const T& back() const;
+    void assign(size_t count, const T& value) {
+      fill_assign(count, value);
+    }
+
+
+    T& front() { return *begin();}
+    const T& front() const { { return *begin();}}
+
+    T& back() {
+       iterator tmp = end();
+	    --tmp;
+	    return *tmp;
+    }
+
+    const T& back() const {
+       const_iterator tmp = end();
+	    --tmp;
+	    return *tmp;
+    }
 
 
     iterator begin() const;
@@ -102,12 +211,21 @@ public:
 
     // Your code goes here?..
 
-private:
+ private:
+    struct Node {
+		T item;	 // Содержимое узла
+		Node* prev;	 // Указатель на предыдущий узел
+		Node* next;	 // Указатель на следующий узел
+	};
 
+	Node* first;   // Указатель на первый узел списка
+	Node* last;	 // Указатель на последний узел списка
+	size_t length;  // Размер списка
     // Your code goes here...
-
 };
 
+template<class T>
+list<T>::list() {}
 // Your template function definitions may go here...
 
 }  // namespace task
