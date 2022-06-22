@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SRC_LIST_HPP_
+#define SRC_LIST_HPP_
 
 #include <cassert>
 #include <iterator>
@@ -204,7 +205,7 @@ class list {
 			return _it == other._it;
 		}
 
-        bool operator!=(const_iterator other) const { 
+        bool operator!=(const_iterator other) const {
 			return !(*this == other);
 		}
     };
@@ -555,3 +556,5 @@ class list {
 };
 
 }  // namespace task
+
+#endif  // SRC_LIST_HPP_
