@@ -80,7 +80,6 @@ class list {
 			}
 			case state::valid: {
 				assert(_node && "No node in valid state");
-				// Перемещаемся к следующему, если есть
 				if (_node->next) {
 					_node = _node->next;
 				} else {
@@ -226,9 +225,6 @@ class list {
     ~list() { clear(); }
 
     list(const list& other) : list() {
-		// for (auto it = other.cbegin(); it != other.cend(); ++it) {
-		// 	push_back(*it);
-		// }
 		for (const auto &value : other) {
 			push_back(value);
 		}
