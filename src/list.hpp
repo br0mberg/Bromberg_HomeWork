@@ -282,9 +282,7 @@ class list {
 	}
 
     void clear() {
-		for (size_t i = 0, n = size(); i < n; ++i) {
-			pop_front();
-		}
+		while (!empty()) pop_front();
 		_head = _tail = nullptr;
 	}
 
