@@ -4,9 +4,9 @@
 #include <cassert>
 #include <iterator>
 #include <limits>
+#include <algorithm>
 
 namespace task {
-
 
 template<class T>
 class list {
@@ -18,6 +18,7 @@ class list {
 		node() = default;
 		node(const T &value, node *prev = nullptr, node *next = nullptr)
 			: value(value), prev(prev), next(next) {}
+
 
 		static void wire(node *prev, node *next) {
 			if (prev) {
@@ -45,14 +46,11 @@ class list {
 			past_end,
 			before_begin
 		};
+
 		state _state = state::past_end;
 
 		iterator(node *node, state state = state::valid)
-		 : _node(node), _state(state) {
-			if (nullptr == node) {
-				_state = state::past_end;
-			}
-		}
+		 : _node(node), _state(node ? state : state::past_end) {}
 
     	public:
         using difference_type = ptrdiff_t;
@@ -63,11 +61,7 @@ class list {
 
         iterator() = default;
         iterator(const iterator &other) : _node(other._node), _state(other._state) {}
-        iterator& operator=(const iterator& other) {
-			_node = other._node;
-			_state = other._state;
-			return *this;
-		}
+        iterator& operator=(const iterator& other) = default;
 
         iterator& operator++() {
 			switch (_state) {
@@ -87,13 +81,11 @@ class list {
 				}
 				return *this;
 			}
-			default: {
-				assert(false && "unreachable");
-				return *this;
 			}
-			}
+			// Unreachable
+			abort();
+			return *this;
 		}
-
         iterator operator++(int) {
 			iterator tmp(*this);
 			++(*this);
@@ -104,34 +96,31 @@ class list {
 			assert(_state == state::valid && "Dereferencing iterator in invalid state");
 			return _node->value;
 		}
-
         pointer operator->() const { return &this->operator*(); }
 
         iterator& operator--() {
 			switch (_state) {
-			case state::before_begin: {
-				return *this;
-			}
-			case state::past_end: {
-				_state = _node ? state::valid : state::before_begin;
-				return *this;
-			}
-			case state::valid: {
-				assert(_node && "No node in valid state");
-				if (_node->prev) {
-					_node = _node->prev;
-				} else {
-					_state = state::before_begin;
+				case state::before_begin: {
+					return *this;
 				}
-				return *this;
+				case state::past_end: {
+					_state = _node ? state::valid : state::before_begin;
+					return *this;
+				}
+				case state::valid: {
+					assert(_node && "No node in valid state");
+					if (_node->prev) {
+						_node = _node->prev;
+					} else {
+						_state = state::before_begin;
+					}
+					return *this;
+				}
 			}
-			default: {
-				assert(false && "unreachable");
-				return *this;
-			}
-			}
+			// Unreachable
+			abort();
+			return *this;
 		}
-
         iterator operator--(int) {
 			iterator tmp(*this);
 			--(*this);
@@ -142,16 +131,17 @@ class list {
 			if (other._state != _state) {
 				return _node == nullptr && other._node == nullptr;
 			}
-			switch (_state) {
-			case state::valid: {
+
+			if (_state == state::valid) {
 				return _node == other._node;
-			}
-			default: {
+			} else if (_state == state::past_end
+			|| _state == state::before_begin) {
 				return true;
 			}
-			}
-		}
 
+			abort();
+			return false;
+		}
         bool operator!=(iterator other) const { return !(*this == other); }
     };
 
@@ -159,6 +149,16 @@ class list {
        	iterator _it;
 
 	   	node *node_it() const { return _it._node; }
+
+		struct node *node_or_null() const {
+			if (_it._state == iterator::state::valid) { return _it._node; }
+			return nullptr;
+		}
+
+		struct node *prev_node() const {
+			if (is_past_end()) { return _it._node; }
+			return node_it() ? _it._node->prev : nullptr;
+		}
 
 		friend list;
 
@@ -207,6 +207,10 @@ class list {
         bool operator!=(const_iterator other) const {
 			return !(*this == other);
 		}
+
+		bool is_past_end() const noexcept {
+			return _it._state == iterator::state::past_end;
+		}
     };
 
     using reverse_iterator = std::reverse_iterator<iterator>;
@@ -229,6 +233,7 @@ class list {
 			push_back(value);
 		}
 	}
+
     list& operator=(const list& other) {
 		list tmp(other);
 		swap(tmp);
@@ -240,14 +245,20 @@ class list {
 		return _head->value;
 	}
 
-    const T& front() const { return const_cast<list *>(this)->front(); }
+    const T& front() const {
+		assert(_head && "Accessing front of empty list");
+		return _head->value;
+	}
 
     T& back() {
 		assert(_tail && "Accessing back of empty list");
 		return _tail->value;
 	}
 
-    const T& back() const { return const_cast<list *>(this)->back(); }
+    const T& back() const {
+		assert(_tail && "Accessing back of empty list");
+		return _tail->value;
+	}
 
 
     iterator begin() const { return iterator(_head); }
@@ -295,7 +306,6 @@ class list {
 
 		return iterator(node);
 	}
-
 
     iterator insert(const_iterator pos, size_t count, const T& value) {
 		auto it = pos._it;
@@ -356,15 +366,15 @@ class list {
 
     void pop_back() {
 		switch (size()) {
-		case 0: {
-			return;
-		}
-		case 1: {
-			_head = nullptr;
-		}
-		default: {
-			break;
-		}
+			case 0: {
+				return;
+			}
+			case 1: {
+				_head = nullptr;
+			}
+			default: {
+				break;
+			}
 		}
 
 		node *tmp = _tail;
@@ -390,15 +400,9 @@ class list {
 
     void pop_front() {
 		switch (size()) {
-		case 0: {
-			return;
-		}
-		case 1: {
-			_tail = nullptr;
-		}
-		default: {
-			break;
-		}
+		case 0: return;
+		case 1: _tail = nullptr;
+		default: break;
 		}
 
 		node *tmp = _head;
@@ -444,7 +448,7 @@ class list {
 					auto node = it2.node_it();
 					++it2;
 
-					node::wire(it1.node_it()->prev, node, it1.node_it());
+					node::wire(it1.prev_node(), node, it1.node_it());
 				} while (it2 != other.cend() && *it2 < *it1);
 			} else {
 				++it1;
@@ -464,8 +468,12 @@ class list {
     void splice(const_iterator pos, list& other) {
 		if (other.empty()) { return; }
 
-		node::wire(pos.node_it()->prev, other._head);
-	 	node::wire(other._tail, pos.node_it());
+		node::wire(pos.prev_node(), other._head);
+	 	node::wire(other._tail, pos.node_or_null());
+
+		if (pos == cbegin()) {
+			_head = other._head;
+		}
 
 		if (pos == cend()) {
 			_tail = other._tail;
@@ -511,16 +519,38 @@ class list {
     void sort() {
 		if (size() <= 1) { return; }
 
-		auto right = split_in_half();
+		size_t n = size();
 
-		sort();
-		right.sort();
+		for (size_t block_size = 1; block_size < n; block_size *= 2) {
+			size_t element_index = 0;
+			for (
+				auto block_pair_start = cbegin();
+				block_pair_start != cend();
+			) {
+				auto second_block_start = std::next(block_pair_start, block_size);
+				auto l = extract(
+					block_pair_start, second_block_start,
+					std::min(block_size, n - element_index));
+				element_index += block_size;
 
-		merge(right);
+				auto second_block_end = std::next(second_block_start, block_size);
+				auto r = extract(
+					second_block_start, second_block_end,
+					element_index >= n ? 0 : std::min(block_size, n - element_index));
+				element_index += block_size;
+
+				l.merge(r);
+
+				splice(second_block_end.is_past_end() ? cend() : second_block_end, l);
+
+				block_pair_start = second_block_end;
+			}
+		}
 	}
 
 	private:
 	size_t _size = 0;
+
 	node *_head = nullptr;
 	node *_tail = nullptr;
 
@@ -530,24 +560,28 @@ class list {
 		_tail = nullptr;
 	}
 
-	list split_in_half() {
-		if (size() <= 1) { return list(); }
+	list extract(const_iterator first, const_iterator last, size_t len) {
+		if (len == 0 || first == last) { return list(); }
 
-		auto median = std::prev(cend(), size() / 2);
+		auto l = list();
+		l._size = len;
+		l._head = first.node_it();
+		l._tail = last.prev_node();
 
-		_tail = median.node_it()->prev;
-		_tail->next = nullptr;
+		if (first == cbegin()) {
+			_head = last.node_or_null();
+		}
+		if (last == cend()) {
+			_tail = first.prev_node();
+		}
 
-		median.node_it()->prev = nullptr;
+		node::wire(l._head->prev, l._tail->next);
+		l._head->prev = nullptr;
+		l._tail->next = nullptr;
 
-		list right;
-		right._head = median.node_it();
-		right._size = size() / 2;
-		right._tail = cend().node_it();
+		_size -= len;
 
-		_size -= right.size();
-
-		return right;
+		return l;
 	}
 };
 
