@@ -37,7 +37,7 @@ class list {
 
 	public:
     class iterator {
-		friend class list;
+	friend class list;
 
         node *_node = nullptr;
 
@@ -64,27 +64,26 @@ class list {
         iterator& operator=(const iterator& other) = default;
 
         iterator& operator++() {
-			switch (_state) {
-			case state::past_end: {
-				return *this;
-			}
-			case state::before_begin: {
-				_state = _node ? state::valid : state::past_end;
-				return *this;
-			}
-			case state::valid: {
-				assert(_node && "No node in valid state");
-				if (_node->next) {
-					_node = _node->next;
-				} else {
-					_state = state::past_end;
-				}
-				return *this;
-			}
-			}
-			// Unreachable
-			abort();
+		switch (_state) {
+		case state::past_end: {
 			return *this;
+		}
+		case state::before_begin: {
+			_state = _node ? state::valid : state::past_end;
+			return *this;
+		}
+		case state::valid: {
+			assert(_node && "No node in valid state");
+			if (_node->next) {
+				_node = _node->next;
+			} else {
+				_state = state::past_end;
+			}
+			return *this;
+		}
+		}
+		// Unreachable
+		abort();
 		}
         iterator operator++(int) {
 			iterator tmp(*this);
@@ -119,7 +118,6 @@ class list {
 			}
 			// Unreachable
 			abort();
-			return *this;
 		}
         iterator operator--(int) {
 			iterator tmp(*this);
@@ -134,13 +132,9 @@ class list {
 
 			if (_state == state::valid) {
 				return _node == other._node;
-			} else if (_state == state::past_end
-			|| _state == state::before_begin) {
-				return true;
 			}
 
-			abort();
-			return false;
+			return true;
 		}
         bool operator!=(iterator other) const { return !(*this == other); }
     };
