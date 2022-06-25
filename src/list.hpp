@@ -27,6 +27,7 @@ struct node {
             next->prev = prev;
         }
     }
+
     static void wire(node *prev, node *curr, node *next) {
         wire(prev, curr);
         wire(curr, next);
@@ -62,26 +63,26 @@ struct node {
         iterator& operator=(const iterator& other) = default;
 
         iterator& operator++() {
-        switch (_state) {
-            case state::past_end: {
-                return *this;
-            }
-            case state::before_begin: {
-                _state = _node ? state::valid : state::past_end;
-                return *this;
-            }
-            case state::valid: {
-                assert(_node && "No node in valid state");
-                if (_node->next) {
-                    _node = _node->next;
-                } else {
-                    _state = state::past_end;
+            switch (_state) {
+                case state::past_end: {
+                    return *this;
                 }
-                return *this;
+                case state::before_begin: {
+                    _state = _node ? state::valid : state::past_end;
+                    return *this;
+                }
+                case state::valid: {
+                    assert(_node && "No node in valid state");
+                    if (_node->next) {
+                        _node = _node->next;
+                    } else {
+                        _state = state::past_end;
+                    }
+                    return *this;
+                }
             }
-        }
-        // Unreachable
-        abort();
+            // Unreachable
+            abort();
         }
         iterator operator++(int) {
             iterator tmp(*this);
@@ -117,6 +118,7 @@ struct node {
             // Unreachable
             abort();
         }
+
         iterator operator--(int) {
             iterator tmp(*this);
             --(*this);
@@ -134,13 +136,14 @@ struct node {
 
             return true;
         }
+
         bool operator!=(iterator other) const { return !(*this == other); }
     };
 
     class const_iterator {
-           iterator _it;
+        iterator _it;
 
-           node *node_it() const { return _it._node; }
+        node *node_it() const { return _it._node; }
 
         struct node *node_or_null() const {
             if (_it._state == iterator::state::valid) { return _it._node; }
@@ -164,6 +167,7 @@ struct node {
         const_iterator() = default;
         const_iterator(iterator it) : _it(it) {}
         const_iterator(const const_iterator &other) : _it(other._it) {}
+
         const_iterator& operator=(const const_iterator& other) {
             _it = other._it;
             return *this;
@@ -173,6 +177,7 @@ struct node {
             ++_it;
             return *this;
         }
+
         const_iterator operator++(int) {
             const_iterator tmp(*this);
             ++(*this);
@@ -186,6 +191,7 @@ struct node {
             --_it;
             return *this;
         }
+
         const_iterator operator--(int) {
             const_iterator tmp(*this);
             --(*this);
@@ -459,7 +465,7 @@ struct node {
         if (other.empty()) { return; }
 
         node::wire(pos.prev_node(), other._head);
-         node::wire(other._tail, pos.node_or_null());
+        node::wire(other._tail, pos.node_or_null());
 
         if (pos == cbegin()) {
             _head = other._head;
