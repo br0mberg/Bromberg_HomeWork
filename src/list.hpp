@@ -33,7 +33,7 @@ struct node {
     }
 };
 
-public:
+ public:
     class iterator {
     friend class list;
 
@@ -50,7 +50,7 @@ public:
         iterator(node *node, state state = state::valid)
          : _node(node), _state(node ? state : state::past_end) {}
 
-        public:
+     public:
         using difference_type = ptrdiff_t;
         using value_type = T;
         using pointer = T*;
@@ -63,22 +63,22 @@ public:
 
         iterator& operator++() {
         switch (_state) {
-        case state::past_end: {
-            return *this;
-        }
-        case state::before_begin: {
-            _state = _node ? state::valid : state::past_end;
-            return *this;
-        }
-        case state::valid: {
-            assert(_node && "No node in valid state");
-            if (_node->next) {
-                _node = _node->next;
-            } else {
-                _state = state::past_end;
+            case state::past_end: {
+                return *this;
             }
-            return *this;
-        }
+            case state::before_begin: {
+                _state = _node ? state::valid : state::past_end;
+                return *this;
+            }
+            case state::valid: {
+                assert(_node && "No node in valid state");
+                if (_node->next) {
+                    _node = _node->next;
+                } else {
+                    _state = state::past_end;
+                }
+                return *this;
+            }
         }
         // Unreachable
         abort();
@@ -538,7 +538,7 @@ public:
         }
     }
 
-    private:
+ private:
     size_t _size = 0;
 
     node *_head = nullptr;
@@ -552,12 +552,10 @@ public:
 
     list extract(const_iterator first, const_iterator last, size_t len) {
         if (len == 0 || first == last) { return list(); }
-
         auto l = list();
         l._size = len;
         l._head = first.node_it();
         l._tail = last.prev_node();
-
         if (first == cbegin()) {
             _head = last.node_or_null();
         }
